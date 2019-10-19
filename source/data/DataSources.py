@@ -15,13 +15,17 @@ class DataSources:
             for source in self.sources[1:]:
                 dataset = dataset.concatenate(source.get_tf_dataset())
 
-        dataset = dataset.cache()
-        dataset = dataset.prefetch(buffer_size=AUTOTUNE)
+        dataset = dataset.take(self.get_maximum_dataset_size())
 
-        dataset = dataset.batch(self.get_mini_batch_size())
+        dataset = dataset.cache(self.get_cache_file())
+
+        dataset = dataset.padded_batch(self.get_mini_batch_size(),
+            padded_shapes=((None, 1), (), (), ()))
 
         if self.get_data_shuffle_window() > 0:
             dataset = dataset.shuffle(self.get_data_shuffle_window())
+
+        dataset = dataset.prefetch(buffer_size=AUTOTUNE)
 
         return dataset
 
@@ -33,5 +37,12 @@ class DataSources:
 
     def get_data_shuffle_window(self):
         return int(self.config['model']['data-shuffle-window'])
+
+    def get_maximum_dataset_size(self):
+        return int(self.config['model']['maximum-dataset-size'])
+
+    def get_cache_file(self):
+        return self.sources[0].get_cache_file()
+
 
 

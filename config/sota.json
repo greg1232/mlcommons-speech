@@ -3,21 +3,22 @@
     {
         "type" : "TransformerModel",
         "epochs" : 30,
-        "layer-size" : 128,
+        "layer-size" : 32,
         "layer-count" : 2,
         "vocab-size" : 16384,
-        "mini-batch-size" : 1,
+        "mini-batch-size" : 4,
         "data-shuffle-window" : 200,
-        "number-of-layers" : 1,
         "learning-rate": 1e-4,
-        "frame-size" : 512,
-        "frame-step" : 256
+        "frame-size" : 1024,
+        "frame-step" : 512,
+        "maximum-dataset-size" : 16384
     },
     "training-data-sources" :
     [
         {
             "type" : "AudioCsvDataSource",
-            "path" : "s3://mlcommons-speech-data/ldc/timit/data.csv"
+            "path" : "s3://mlcommons-speech-data/ldc/timit/train.csv",
+            "cache" : "temp-train-cache"
 
         }
     ],
@@ -25,7 +26,8 @@
     [
         {
             "type" : "AudioCsvDataSource",
-            "path" : "s3://mlcommons-speech-data/ldc/timit/data.csv"
+            "path" : "s3://mlcommons-speech-data/ldc/timit/test.csv",
+            "cache" : "temp-test-cache"
         }
     ]
 
