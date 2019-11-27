@@ -9,8 +9,8 @@
         "mini-batch-size" : 4,
         "data-shuffle-window" : 200,
         "learning-rate": 1e-4,
-        "frame-size" : 1024,
-        "frame-step" : 512,
+        "frame-size" : 2048,
+        "frame-step" : 768,
         "maximum-dataset-size" : 16384
     },
     "training-data-sources" :
@@ -18,8 +18,7 @@
         {
             "type" : "AudioCsvDataSource",
             "path" : "s3://mlcommons-speech-data/ldc/timit/train.csv",
-            "cache" : "temp-train-cache"
-
+            "cache" : "temp-timit-train-cache"
         }
     ],
     "validation-data-sources" :
@@ -27,7 +26,22 @@
         {
             "type" : "AudioCsvDataSource",
             "path" : "s3://mlcommons-speech-data/ldc/timit/test.csv",
-            "cache" : "temp-test-cache"
+            "cache" : "temp-timit-test-cache"
+        },
+        {
+            "type" : "AudioCsvDataSource",
+            "path" : "s3://mlcommons-speech-data/dipco-dinner-part-corpus/test.csv",
+            "cache" : "temp-dipco-test-cache"
+        },
+        {
+            "type" : "AudioCsvDataSource",
+            "path" : "s3://mlcommons-speech-data/dipco-dinner-part-corpus/test.csv",
+            "cache" : "temp-dipco-test-cache"
+        },
+        {
+            "type" : "AudioCsvDataSource",
+            "path" : "s3://mlcommons-speech-data/common-voice/test.csv",
+            "cache" : "temp-common-voice-test-cache"
         }
     ]
 
