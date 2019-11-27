@@ -75,7 +75,7 @@ def is_test(filename):
 def is_dev(filename):
     return filename.find("dev") != -1
 
-def is_dev(filename):
+def is_train(filename):
     return filename.find("train") != -1
 
 def is_tsv(filename):
