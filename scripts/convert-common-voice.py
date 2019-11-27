@@ -57,10 +57,10 @@ def convert_common_voice_to_csv(arguments):
 
                     utterance_path = os.path.join(base, "clips", path)
 
+                    new_filename = os.path.join(arguments["output_path"], "clips", path)
+
                     logger.debug("Copying from " + utterance_path + " to " + new_filename)
                     shutil.copy(utterance_path, new_filename)
-
-                    os.path.join(arguments["output_path"], "clips", path)
 
                     if is_test(filename):
                         test_writer.writerow([new_filename, label])
