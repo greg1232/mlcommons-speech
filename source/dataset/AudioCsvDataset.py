@@ -1,5 +1,6 @@
 
 import tensorflow as tf
+import tensorflow_io as tfio
 import os
 import math
 
@@ -27,9 +28,9 @@ class AudioCsvDataset:
         dataset = dataset.cache(filename=self.get_cache_path())
 
         dataset = dataset.shuffle(self.get_shuffle_window_size(), seed=42)
-        #dataset = self.group_by_sequence_length(dataset)
+        dataset = self.group_by_sequence_length(dataset)
 
-        dataset = dataset.padded_batch(self.get_mini_batch_size(), drop_remainder=True)
+        #dataset = dataset.padded_batch(self.get_mini_batch_size(), drop_remainder=True)
         dataset = dataset.prefetch(AUTOTUNE)
 
         logger.debug("dataset " + str(dataset))
@@ -61,9 +62,9 @@ class AudioCsvDataset:
                 return
 
     def load_file(self, path, label):
-        wav_file = tf.io.read_file(path)
+        audio_file = tf.io.read_file(path)
 
-        audio_samples, audio_sample_rate = tf.audio.decode_wav(wav_file)
+        audio_samples, audio_sample_rate = self.decode(audio_file, path)
 
         audio_sample_count = tf.shape(audio_samples)[0]
 
@@ -76,6 +77,15 @@ class AudioCsvDataset:
         sample = (audio_samples[:,0], audio_sample_count, audio_sample_rate, label), 0.0
 
         return sample
+
+    def decode(self, audio_file, path):
+        if self.is_wav(path):
+            return tfio.audio.decode_wav(audio_file, dtype=tf.float32), 16384
+
+        return tfio.audio.decode_mp3(audio_file), 16384
+
+    def is_wav(self, path):
+        return tf.strings.split(path)[-1] == '.wav'
 
     def get_path(self):
         return self.source_config['path']
@@ -106,7 +116,7 @@ class AudioCsvDataset:
             padded_shapes=None,
             padding_values=None,
             pad_to_bucket_boundary=False,
-            no_padding=True,
+            no_padding=False,
             drop_remainder=True)
 
         return dataset.apply(bucket_transformation)

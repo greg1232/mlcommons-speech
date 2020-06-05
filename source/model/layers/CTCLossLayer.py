@@ -30,7 +30,7 @@ class CTCLossLayer(tf.keras.layers.Layer):
 
         self.add_metric(ctc_loss, name='ctc_loss', aggregation='mean')
 
-        ctc_loss = tf.reduce_mean(ctc_loss)
+        ctc_loss = tf.reduce_mean(ctc_loss, axis=-1)
 
         return ctc_loss
 

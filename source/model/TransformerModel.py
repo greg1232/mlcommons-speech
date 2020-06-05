@@ -165,7 +165,7 @@ class TransformerModel:
         if should_profile:
             return 3
         else:
-            return False
+            return 0
 
     def get_model_directory(self):
         return self.config['model']['directory']

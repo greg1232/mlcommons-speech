@@ -24,7 +24,7 @@ class CrossEntropyLossLayer(tf.keras.layers.Layer):
 
         self.add_metric(cross_entropy_loss, name='cross_entropy_loss', aggregation='mean')
 
-        cross_entropy_loss = tf.reduce_mean(cross_entropy_loss)
+        cross_entropy_loss = tf.reduce_mean(cross_entropy_loss, axis=-1)
 
         return cross_entropy_loss
 
