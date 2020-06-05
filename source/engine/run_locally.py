@@ -1,5 +1,4 @@
 
-import numpy
 import logging
 import json
 import os
@@ -7,8 +6,7 @@ import inspect
 import shutil
 
 from model.ModelFactory import ModelFactory
-from data.DataSources import DataSources
-from data.DataSourceFactory import DataSourceFactory
+from dataset.DatasetFactory import DatasetFactory
 from inference.PredictorFactory import PredictorFactory
 
 from tensorflow.python.client import device_lib
@@ -24,22 +22,34 @@ def run_locally(arguments):
 
     with tf.device(device):
         if arguments["predict"]:
-            test_data = get_data(config, "test-data-sources")
-            predictor = get_predictor(config, test_data)
-
-            predictor.predict()
-
+            run_predict(config)
         else:
             make_experiment(config, arguments)
+            run_training(config)
 
-            training_data   = get_data(config, "training-data-sources")
-            validation_data = get_data(config, "validation-data-sources")
+def run_predict(config):
+    test_data = get_data(config, "test-set")
+    predictor = PredictorFactory(config, test_data).create()
 
-            model = get_model(config, training_data, validation_data)
-            model.train()
+    predictor.predict()
+
+def run_training(config):
+    training_data = get_data(config, "training-set")
+    development_data = get_data(config, "development-set")
+
+    model = ModelFactory(config, training_data, development_data).create()
+
+    model.train()
+
+def get_data(config, name):
+    return DatasetFactory(config).create(config[name])
 
 def setup_logging(arguments):
-    numpy.set_printoptions(precision=3, linewidth=150)
+
+    if arguments["verbose"]:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     root_logger = logging.getLogger()
 
@@ -48,27 +58,7 @@ def setup_logging(arguments):
     else:
         root_logger.setLevel(logging.INFO)
 
-    for scope in arguments["enable_logger"]:
-        logger = logging.getLogger(scope)
-        logger.setLevel(logging.DEBUG)
-
-def get_model(config, training_data, validation_data):
-    return ModelFactory(config,
-        training_data,
-        validation_data).create()
-
-def get_predictor(config, validation_data):
-    return PredictorFactory(config, validation_data).create()
-
-def get_data(config, name):
-    sources = config[name]
-
-    data_sources = DataSources(config)
-
-    for source in sources:
-        data_sources.add_source(DataSourceFactory(config).create(source))
-
-    return data_sources
+    logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
 def make_experiment(config, arguments):
     config["model"]["directory"] = name_directory(arguments["experiment_name"])
@@ -123,12 +113,14 @@ def load_config(arguments):
 
     with open(arguments["model_path"]) as config_file:
         config = json.load(config_file)
+        config["model"]["directory"] = os.path.dirname(arguments["model_path"])
 
     if len(arguments["test_set"]) > 0:
-        config["test-data-sources"] = [{ "type" : arguments["data_source_type"],
-                                         "path" : arguments["test_set"] }]
+        config["test-set"] = { "path" : arguments["test_set"], "type" : arguments["test_set_type"] }
 
     override_config(config, arguments)
+
+    config["output-path"] = arguments["output_path"]
 
     return config
 

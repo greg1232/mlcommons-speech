@@ -2,10 +2,10 @@
 import os
 
 class PredictorFactory:
-    def __init__(self, config, validation_data):
+    def __init__(self, config, test_data):
 
         self.config = config
-        self.validation_data = validation_data
+        self.test_data = test_data
 
     def create(self):
 

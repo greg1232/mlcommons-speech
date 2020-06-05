@@ -1,12 +1,10 @@
 
 
-import os
-
 from model.TransformerModel import TransformerModel
 
 class ModelFactory:
     def __init__(self, config,
-        training_data, validation_data):
+        training_data=None, validation_data=None):
 
         self.config = config
         self.model_name = config["model"]["type"]
