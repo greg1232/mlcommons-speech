@@ -24,4 +24,9 @@ Simple test code for speech dataset
 * Sets the correct AWS region
 * Supressed tensorflow S3 logs
 
+# Principles
+
+* Push button:  It should be possible to clone this repo and reproduce the SOTA result on multiple machines with one short command.
+* A good model: The SOTA model should have a short and clean implementation and achieve high accuracy.
+
 
