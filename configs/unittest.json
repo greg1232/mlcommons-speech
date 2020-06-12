@@ -1,0 +1,47 @@
+{
+    "model" :
+    {
+        "type" : "TransformerModel",
+        "epochs" : 200,
+        "batch-size" : 4,
+        "early-stopping-patience" : 50,
+        "layer-size" : 512,
+        "layer-count" : 1,
+        "attention-head-count" : 1,
+        "vocab-size" : 16384,
+        "data-shuffle-window" : 200,
+        "learning-rate": 1e-4,
+        "frame-size" : 2048,
+        "frame-step" : 768,
+        "dropout" : 0.1,
+        "enable-profiler" : false,
+        "shuffle-window-size" : 128,
+        "maximum-sequence-length" : 256,
+        "maximum-subword-length" : 20,
+        "maximum-corpus-size-for-vocab" : 1e5
+    },
+    "training-set" :
+    {
+        "type" : "AudioCsvDataset",
+        "path" : "s3://mlcommons-speech-data/ldc/timit/train.csv",
+        "maximum-size" : 512
+    },
+    "development-set" :
+    {
+        "type" : "AudioCsvDataset",
+        "path" : "s3://mlcommons-speech-data/ldc/timit/test.csv",
+        "maximum-size" : 512
+    },
+    "system" :
+    {
+        "cache" : "data/cache"
+    },
+    "predictor" :
+    {
+        "type" : "GreedyDecoder"
+    }
+
+
+}
+
+
