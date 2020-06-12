@@ -26,7 +26,7 @@ def main():
         help = "Run code from this repo rather than from the repo with the model (if different).")
     parser.add_argument("--test-set", default="",
         help = "The path to the test set to run on.")
-    parser.add_argument("--data-source-type", default="AudioCsvDataSource",
+    parser.add_argument("--test-set-type", default="AudioCsvDataset",
         help = "The type of dataset.")
     parser.add_argument("-o", "--output-path", default="predictions.json",
         help = "The output path the save the output of the inference run.")

@@ -1,4 +1,5 @@
 import os
+import numpy
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -36,9 +37,15 @@ class TextEncoderLayer(tf.keras.layers.Layer):
         with tf.device('/cpu:0'):
 
             def encode(strings):
+                strings = strings.numpy()
+
+                if type(strings) is bytes:
+                    strings = [strings]
 
                 # get strings
-                encoded = [x.numpy().decode('utf8') for x in strings]
+                encoded = [x.decode('utf8') for x in strings]
+
+                #print("encoded", encoded)
 
                 # encode
                 encoded = [self.encoder.encode(x) for x in encoded]
@@ -51,7 +58,9 @@ class TextEncoderLayer(tf.keras.layers.Layer):
 
                 # pad
                 max_length = max(max_lengths)
-                encoded = [[self.get_document_start_token()] + x + [self.get_document_end_token()] + [0 for i in range(max_length - len(x))] for x in encoded]
+                encoded = [[self.get_document_start_token()] + x + [self.get_document_end_token()] + [0 for i in range(max_length - len(x) - 2)] for x in encoded]
+
+                #print("encoded tokens", encoded)
 
                 # convert to tensors
                 encoded = tf.convert_to_tensor(encoded, dtype=tf.int64)
@@ -73,6 +82,12 @@ class TextEncoderLayer(tf.keras.layers.Layer):
             logger.debug("label lengths " + str(label_lengths))
 
             return encoded_text, target_encoded_text, label_lengths
+
+    def decode(self, indices):
+        if indices[-1] == self.get_document_end_token():
+            return "<START>" + self.encoder.decode(indices[:-1]) + "<END>"
+        else:
+            return "<START>" + self.encoder.decode(indices)
 
     def get_vocab_path(self):
         return os.path.join(self.config['model']['directory'], 'vocab')

@@ -1,5 +1,6 @@
 
 import os
+import numpy
 
 import tensorflow as tf
 
@@ -65,12 +66,12 @@ class TransformerModel:
         audio_model_outputs = tf.keras.layers.Dense(self.get_vocab_size(),
             activation='softmax')(audio_model_features)
 
-        ctc_loss = CTCLossLayer(self.config)(
-            [audio_model_outputs, input_lengths, target_label_indices, label_lengths])
-
         decoder_model_features = self.run_transformer_decoder(audio_model_features, label_indices, label_lengths)
 
         decoder_model_outputs = tf.keras.layers.Dense(self.get_vocab_size())(decoder_model_features)
+
+        ctc_loss = CTCLossLayer(self.config)(
+            [audio_model_outputs, input_lengths, target_label_indices, label_lengths])
 
         cross_entropy_loss = CrossEntropyLossLayer(self.config)(
             [decoder_model_outputs, target_label_indices, label_lengths])
@@ -89,6 +90,12 @@ class TransformerModel:
         print(self.training_model.summary())
         print(self.training_model.metrics_names)
 
+        token_probabilities = tf.keras.layers.Softmax()(decoder_model_outputs)
+
+        self.inference_model = tf.keras.Model(
+            inputs=[audio_samples, audio_sample_counts, audio_sampling_rates, labels],
+            outputs=[label_indices, token_probabilities, label_lengths])
+
     def run_transformer_encoder(self, hidden):
         logger.debug("transformer encoder input: " + str(hidden))
         hidden = tf.keras.layers.Conv1D(filters=self.get_layer_size(), kernel_size=3, padding='same')(hidden)
@@ -100,7 +107,7 @@ class TransformerModel:
         logger.debug("transformer decoder labels: " + str(labels))
 
         label_embedding = tf.keras.layers.Embedding(
-            self.get_vocab_size(), self.get_layer_size())(labels)
+            self.get_vocab_size(), self.get_layer_size(), mask_zero=True)(labels)
 
         hidden = PadAndAddLayer()([label_embedding, hidden])
 
@@ -113,10 +120,48 @@ class TransformerModel:
         return self.text_encoder_layer(labels)
 
     def predict_on_batch(self, x):
-        return self.training_model.predict_on_batch(x)
+        input_tokens, token_probabilities, label_lengths = self.inference_model.predict_on_batch(x)
+
+        return self.decode_probabilities(input_tokens, token_probabilities, label_lengths)
+
+    def decode_probabilities(self, input_tokens, token_probabilities, label_lengths):
+        batch_size = token_probabilities.shape[0]
+
+        indices = numpy.argmax(token_probabilities, axis=-1)
+
+        #print("probabilities", token_probabilities)
+        #print("label lengths", label_lengths)
+
+        labels = []
+
+        for i in range(batch_size):
+            sample_indices = list(input_tokens[i, 1:label_lengths[i][0]]) + [indices[i,label_lengths[i][0]-1] + 1]
+            try:
+                end_position = sample_indices.index(self.get_document_end_token()-1)
+                clamped_sample_indices = sample_indices[:end_position]
+                suffix = "<END>"
+            except ValueError:
+                clamped_sample_indices = sample_indices
+                suffix = ""
+
+            #print("all_indices", indices)
+            #print("input_tokens", input_tokens)
+            #print("indices", sample_indices)
+            #print("clamped indices", sample_indices)
+
+            labels.append(self.text_encoder_layer.decode(clamped_sample_indices) + suffix)
+
+        for index in range(batch_size):
+            if indices.shape[1] >= self.get_maximum_sequence_length():
+                labels[index] += "<END>"
+
+        return labels
 
     def get_vocab_size(self):
         return self.text_encoder_layer.get_total_vocab_size()
+
+    def get_document_end_token(self):
+        return self.text_encoder_layer.get_document_end_token()
 
     def checkpoint(self):
         self.training_model.save_weights(self.get_checkpoint_model_directory())
@@ -193,6 +238,9 @@ class TransformerModel:
 
     def get_save_best_only(self):
         return self.get_save_frequency() == 'epoch'
+
+    def get_maximum_sequence_length(self):
+        return int(self.config['model']['maximum-sequence-length'])
 
 
 
