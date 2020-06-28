@@ -3,14 +3,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from model.ModelFactory import ModelFactory
+from model.AcousticModelFactory import AcousticModelFactory
 
 class GreedyDecoder:
     def __init__(self, config, test_dataset):
         self.config = config
         self.test_dataset = test_dataset
 
-        self.model = ModelFactory(self.config).create()
+        self.model = AcousticModelFactory(self.config).create()
 
     def predict(self):
         for batch, label_batch in self.test_dataset.get_tensorflow_dataset():
@@ -20,7 +20,7 @@ class GreedyDecoder:
                 predicted_label = ""
                 while not self.is_finished(predicted_label):
                     batch_slice = self.get_batch_slice(batch, predicted_label, sample)
-                    predicted_label = self.model.predict_on_batch(batch_slice)[0]
+                    predicted_label = self.model.predict_on_batch(batch_slice, beam_size=1)[0][0]
                     logger.debug("Label is: '" + predicted_label + "'")
 
                 self.write_result(predicted_label, batch, sample)

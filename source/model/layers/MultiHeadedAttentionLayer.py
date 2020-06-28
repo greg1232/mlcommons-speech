@@ -6,9 +6,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class MultiHeadedAttentionLayer(tf.keras.layers.Layer):
-    def __init__(self, config, causal=False, **kwargs):
+    def __init__(self, config, model_config, causal=False, **kwargs):
         super(MultiHeadedAttentionLayer, self).__init__(**kwargs)
         self.config = config
+        self.model_config = model_config
 
         self.norm_1 = tf.keras.layers.BatchNormalization()
         self.dense_1 = tf.keras.layers.Dense(self.get_layer_size(), activation='relu')
@@ -103,13 +104,13 @@ class MultiHeadedAttentionLayer(tf.keras.layers.Layer):
         return input_shape
 
     def get_layer_size(self):
-        return int(self.config["model"]["layer-size"])
+        return int(self.model_config["layer-size"])
 
     def get_attention_head_count(self):
-        return int(self.config["model"]["attention-head-count"])
+        return int(self.model_config["attention-head-count"])
 
     def get_dropout(self):
-        return float(self.config["model"]["dropout"])
+        return float(self.model_config["dropout"])
 
 
 

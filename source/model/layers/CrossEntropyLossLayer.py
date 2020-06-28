@@ -18,7 +18,6 @@ class CrossEntropyLossLayer(tf.keras.layers.Layer):
 
         shifted_labels = tf.pad(shifted_labels, [[0,0], [0, tf.shape(predictions)[1]-tf.shape(labels)[1]]], constant_values=-1)
 
-
         cross_entropy_loss = tf.keras.losses.sparse_categorical_crossentropy(
             tf.maximum(shifted_labels, 0), predictions, from_logits=True,
         )

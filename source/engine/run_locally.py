@@ -5,7 +5,8 @@ import os
 import inspect
 import shutil
 
-from model.ModelFactory import ModelFactory
+from model.AcousticModelFactory import AcousticModelFactory
+from model.LanguageModelFactory import LanguageModelFactory
 from dataset.DatasetFactory import DatasetFactory
 from inference.PredictorFactory import PredictorFactory
 
@@ -34,10 +35,22 @@ def run_predict(config):
     predictor.predict()
 
 def run_training(config):
-    training_data = get_data(config, "training-set")
-    development_data = get_data(config, "development-set")
+    run_language_model_training(config)
+    run_acoustic_model_training(config)
 
-    model = ModelFactory(config, training_data, development_data).create()
+def run_language_model_training(config):
+    training_data = get_data(config, "language-training-set")
+    development_data = get_data(config, "language-development-set")
+
+    model = LanguageModelFactory(config, training_data, development_data).create()
+
+    model.train()
+
+def run_acoustic_model_training(config):
+    training_data = get_data(config, "acoustic-training-set")
+    development_data = get_data(config, "acoustic-development-set")
+
+    model = AcousticModelFactory(config, training_data, development_data).create()
 
     model.train()
 
@@ -61,12 +74,16 @@ def setup_logging(arguments):
     logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
 def make_experiment(config, arguments):
-    config["model"]["directory"] = name_directory(arguments["experiment_name"])
+    directory = name_directory(arguments["experiment_name"])
 
-    directory = config["model"]["directory"]
+    config["directory"] = directory
+    config["acoustic-model"]["directory"] = os.path.join(directory, "acoustic-model")
+    config["language-model"]["directory"] = os.path.join(directory, "language-model")
 
     if not os.path.exists(directory):
         os.makedirs(directory)
+        os.makedirs(config["acoustic-model"]["directory"])
+        os.makedirs(config["language-model"]["directory"])
 
     # save the config file
     config_path = os.path.join(directory, "config.json")
@@ -113,7 +130,8 @@ def load_config(arguments):
 
     with open(arguments["model_path"]) as config_file:
         config = json.load(config_file)
-        config["model"]["directory"] = os.path.dirname(arguments["model_path"])
+        config["acoustic-model"]["directory"] = os.path.dirname(arguments["model_path"])
+        config["language-model"]["directory"] = os.path.dirname(arguments["model_path"])
 
     if len(arguments["test_set"]) > 0:
         config["test-set"] = { "path" : arguments["test_set"], "type" : arguments["test_set_type"] }

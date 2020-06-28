@@ -39,8 +39,8 @@ def run_locally(arguments):
     with open(arguments["model_path"]) as config_file:
         config = json.load(config_file)
 
-    if "directory" in config["model"] and not arguments["run_in_this_repo"]:
-        directory = config["model"]["directory"]
+    if "directory" in config and not arguments["run_in_this_repo"]:
+        directory = config["directory"]
     else:
         directory = os.path.dirname(os.path.abspath(__file__))
 

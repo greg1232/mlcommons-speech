@@ -9,9 +9,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TextEncoderLayer(tf.keras.layers.Layer):
-    def __init__(self, config, training_dataset, **kwargs):
+    def __init__(self, config, model_config, training_dataset, **kwargs):
         super(TextEncoderLayer, self).__init__(dtype=tf.int64, trainable=False, **kwargs)
         self.config = config
+        self.model_config = model_config
         self.training_dataset = training_dataset
 
         self.init()
@@ -90,10 +91,10 @@ class TextEncoderLayer(tf.keras.layers.Layer):
             return "<START>" + self.encoder.decode(indices)
 
     def get_vocab_path(self):
-        return os.path.join(self.config['model']['directory'], 'vocab')
+        return os.path.join(self.model_config['directory'], 'vocab')
 
     def get_target_vocab_size(self):
-        return int(self.config['model']['vocab-size'])
+        return int(self.model_config['vocab-size'])
 
     def get_vocab_size(self):
         return self.encoder.vocab_size
@@ -111,13 +112,13 @@ class TextEncoderLayer(tf.keras.layers.Layer):
         return os.path.exists(self.get_vocab_path() + ".subwords")
 
     def get_maximum_sequence_length(self):
-        return int(self.config['model']['maximum-sequence-length'])
+        return int(self.model_config['maximum-sequence-length'])
 
     def get_maximum_subword_length(self):
-        return int(self.config['model']['maximum-subword-length'])
+        return int(self.model_config['maximum-subword-length'])
 
     def get_maximum_corpus_size_for_vocab(self):
-        return int(self.config['model']['maximum-corpus-size-for-vocab'])
+        return int(self.model_config['maximum-corpus-size-for-vocab'])
 
 
 

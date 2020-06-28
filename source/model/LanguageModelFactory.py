@@ -1,13 +1,13 @@
 
 
-from model.TransformerModel import TransformerModel
+from model.TransformerLanguageModel import TransformerLanguageModel
 
-class ModelFactory:
+class LanguageModelFactory:
     def __init__(self, config,
         training_data=None, validation_data=None):
 
         self.config = config
-        self.model_name = config["model"]["type"]
+        self.model_name = config["language-model"]["type"]
         self.validation_data = validation_data
         self.training_data = training_data
 
@@ -16,8 +16,12 @@ class ModelFactory:
         if self.model_name == "TransformerModel":
             return TransformerModel(self.config,
                 self.training_data, self.validation_data)
+        elif self.model_name == "TransformerLanguageModel":
+            return TransformerLanguageModel(self.config,
+                self.training_data, self.validation_data)
 
         raise RuntimeError("Unknown model name " + self.model_name)
+
 
 
 
