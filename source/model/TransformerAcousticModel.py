@@ -13,6 +13,8 @@ from model.layers.DummyLoss import DummyLoss
 from model.layers.CTCLossLayer import CTCLossLayer
 from model.layers.CrossEntropyLossLayer import CrossEntropyLossLayer
 
+from model.LanguageModelFactory import LanguageModelFactory
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,7 +52,7 @@ class TransformerAcousticModel:
                 monitor='val_cross_entropy_loss'),
             # Write TensorBoard logs to `./logs` directory
             tf.keras.callbacks.TensorBoard(
-                log_dir=os.path.join(self.config['model']['directory'], 'logs'),
+                log_dir=os.path.join(self.config['acoustic-model']['directory'], 'logs'),
                 profile_batch=self.get_profile_batch(),
                 update_freq=100)
         ]
@@ -117,12 +119,18 @@ class TransformerAcousticModel:
 
     def encode_text(self, labels):
         self.text_encoder_layer = TextEncoderLayer(
-            self.config, self.training_dataset)
+            self.config, self.config["language-model"], self.training_dataset)
 
         return self.text_encoder_layer(labels)
 
     def predict_on_batch(self, x, beam_size=1):
         input_tokens, token_probabilities, label_lengths = self.inference_model.predict_on_batch(x)
+
+        language_input_tokens, language_token_probabilities, language_label_lengths = self.language_model.predict_on_batch(x[-1, :])
+
+        assert(input_tokens == language_input_tokens)
+
+        token_probabilities = token_probabilities * (1.0 - self.get_language_model_scale()) + language_token_probabilities * (self.get_language_model_scale())
 
         return self.decode_probabilities(input_tokens, token_probabilities, label_lengths, beam_size)
 
@@ -250,7 +258,7 @@ class TransformerAcousticModel:
         return int(self.config['acoustic-model']['early-stopping-patience'])
 
     def get_validation_steps(self):
-        if not 'validation-steps' in self.config['model']:
+        if not 'validation-steps' in self.config['acoustic-model']:
             return None
 
         return int(self.config['acoustic-model']['validation-steps'])
@@ -266,6 +274,9 @@ class TransformerAcousticModel:
 
     def get_maximum_sequence_length(self):
         return int(self.config['acoustic-model']['maximum-sequence-length'])
+
+    def get_language_model_scale(self):
+        return int(self.config['acoustic-model']['language-model-scale'])
 
 
 

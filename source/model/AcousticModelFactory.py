@@ -7,7 +7,7 @@ class AcousticModelFactory:
         training_data=None, validation_data=None):
 
         self.config = config
-        self.model_name = config["model"]["type"]
+        self.model_name = config["acoustic-model"]["type"]
         self.validation_data = validation_data
         self.training_data = training_data
 

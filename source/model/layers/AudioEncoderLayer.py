@@ -33,8 +33,8 @@ class AudioEncoderLayer(tf.keras.layers.Layer):
         return real_frequencies, (audio_sample_counts + self.get_frame_step() - 1) // self.get_frame_step()
 
     def get_frame_size(self):
-        return int(self.config['model']['frame-size'])
+        return int(self.config['acoustic-model']['frame-size'])
 
     def get_frame_step(self):
-        return int(self.config['model']['frame-step'])
+        return int(self.config['acoustic-model']['frame-step'])
 

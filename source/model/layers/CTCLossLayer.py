@@ -45,5 +45,5 @@ class CTCLossLayer(tf.keras.layers.Layer):
 
 
     def get_ctc_loss_scale(self):
-        return (self.config["model"]["ctc-loss-scale"])
+        return (self.config["acoustic-model"]["ctc-loss-scale"])
 

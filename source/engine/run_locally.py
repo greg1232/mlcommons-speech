@@ -77,12 +77,21 @@ def make_experiment(config, arguments):
     directory = name_directory(arguments["experiment_name"])
 
     config["directory"] = directory
-    config["acoustic-model"]["directory"] = os.path.join(directory, "acoustic-model")
-    config["language-model"]["directory"] = os.path.join(directory, "language-model")
 
+    if not "directory" in config["acoustic-model"]:
+        config["acoustic-model"]["directory"] = os.path.join(directory, "acoustic-model")
+
+    if not "directory" in config["language-model"]:
+        config["language-model"]["directory"] = os.path.join(directory, "language-model")
+
+    print("lm  directory", config["language-model"]["directory"])
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+    if not os.path.exists(config["acoustic-model"]["directory"]):
         os.makedirs(config["acoustic-model"]["directory"])
+
+    if not os.path.exists(config["language-model"]["directory"]):
         os.makedirs(config["language-model"]["directory"])
 
     # save the config file
@@ -130,8 +139,6 @@ def load_config(arguments):
 
     with open(arguments["model_path"]) as config_file:
         config = json.load(config_file)
-        config["acoustic-model"]["directory"] = os.path.dirname(arguments["model_path"])
-        config["language-model"]["directory"] = os.path.dirname(arguments["model_path"])
 
     if len(arguments["test_set"]) > 0:
         config["test-set"] = { "path" : arguments["test_set"], "type" : arguments["test_set_type"] }

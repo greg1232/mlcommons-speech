@@ -14,16 +14,15 @@
         "frame-size" : 2048,
         "frame-step" : 768,
         "dropout" : 0.0,
+        "language-model-scale" : 0.5,
         "enable-profiler" : false,
-        "shuffle-window-size" : 128,
-        "maximum-sequence-length" : 256,
-        "maximum-subword-length" : 20,
-        "maximum-corpus-size-for-vocab" : 1e5
+        "shuffle-window-size" : 128
     },
     "language-model" :
     {
+        "directory" : "models/test-409/language-model",
         "type" : "TransformerLanguageModel",
-        "epochs" : 20,
+        "epochs" : 0,
         "batch-size" : 4,
         "early-stopping-patience" : 5,
         "layer-size" : 512,
@@ -41,12 +40,12 @@
     "language-training-set" :
     {
         "type" : "TextCsvDataset",
-        "path" : "data/CC-MAIN-20190817203056-20190817225056-00000.csv"
+        "path" : "s3://mlcommons-language-data/common-crawl/CC-MAIN-20190817203056-20190817225056-00001-train.csv"
     },
     "language-development-set" :
     {
         "type" : "TextCsvDataset",
-        "path" : "data/CC-MAIN-20190817203056-20190817225056-00000.csv"
+        "path" : "s3://mlcommons-language-data/common-crawl/CC-MAIN-20190817203056-20190817225056-00001-test.csv"
     },
     "acoustic-training-set" :
     {

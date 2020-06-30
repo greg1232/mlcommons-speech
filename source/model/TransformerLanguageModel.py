@@ -21,6 +21,9 @@ class TransformerLanguageModel:
 
     def train(self):
 
+        if self.get_epochs() == 0:
+            return
+
         self.training_model.fit(x=self.training_dataset.get_tensorflow_dataset(),
             validation_data=self.validation_dataset.get_tensorflow_dataset(),
             validation_steps=self.get_validation_steps(),

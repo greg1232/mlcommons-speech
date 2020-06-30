@@ -97,10 +97,10 @@ class AudioCsvDataset:
         return "maximum-size" in self.source_config
 
     def get_shuffle_window_size(self):
-        return int(self.config['model']['shuffle-window-size'])
+        return int(self.config['acoustic-model']['shuffle-window-size'])
 
     def get_mini_batch_size(self):
-        return int(self.config['model']['batch-size'])
+        return int(self.config['acoustic-model']['batch-size'])
 
     def group_by_sequence_length(self, dataset):
 
@@ -129,7 +129,7 @@ class AudioCsvDataset:
         return [base ** i for i in range(1, bucket_count)]
 
     def get_maximum_sequence_length(self):
-        return int(self.config['model']['maximum-sequence-length'])
+        return int(self.config['language-model']['maximum-sequence-length'])
 
     def get_cache_path(self):
         relative_path = self.get_relative_path(self.source_config["path"])
