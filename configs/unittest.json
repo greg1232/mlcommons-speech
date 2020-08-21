@@ -2,7 +2,7 @@
     "acoustic-model" :
     {
         "type" : "TransformerAcousticModel",
-        "epochs" : 200,
+        "epochs" : 1,
         "batch-size" : 4,
         "early-stopping-patience" : 50,
         "layer-size" : 512,
@@ -16,11 +16,12 @@
         "dropout" : 0.0,
         "language-model-scale" : 0.5,
         "enable-profiler" : false,
+        "maximum-sequence-length" : 256,
         "shuffle-window-size" : 128
     },
     "language-model" :
     {
-        "directory" : "models/test-409/language-model",
+        "directory" : "models/archive/test-409/language-model",
         "type" : "TransformerLanguageModel",
         "epochs" : 0,
         "batch-size" : 4,
@@ -51,13 +52,13 @@
     {
         "type" : "AudioCsvDataset",
         "path" : "s3://mlcommons-speech-data/ldc/timit/train.csv",
-        "maximum-size" : 512
+        "maximum-size" : 64
     },
     "acoustic-development-set" :
     {
         "type" : "AudioCsvDataset",
         "path" : "s3://mlcommons-speech-data/ldc/timit/test.csv",
-        "maximum-size" : 512
+        "maximum-size" : 64
     },
     "system" :
     {
@@ -67,7 +68,8 @@
     {
         "type" : "BeamSearchDecoder",
         "beam-expansion-size" : 2,
-        "beam-size" : 3
+        "beam-size" : 3,
+        "minimum-log-probability" : -1000.0
     }
 
 

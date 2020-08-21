@@ -124,13 +124,18 @@ class TransformerAcousticModel:
         return self.text_encoder_layer(labels)
 
     def predict_on_batch(self, x, beam_size=1):
+        logger.debug("inference input: " + str(x))
+
         input_tokens, token_probabilities, label_lengths = self.inference_model.predict_on_batch(x)
 
-        language_input_tokens, language_token_probabilities, language_label_lengths = self.language_model.predict_on_batch(x[-1, :])
+        language_input_tokens, language_token_probabilities, language_label_lengths = self.language_model.predict_on_batch(x[3])
 
-        assert(input_tokens == language_input_tokens)
+        assert (input_tokens == language_input_tokens).all()
 
-        token_probabilities = token_probabilities * (1.0 - self.get_language_model_scale()) + language_token_probabilities * (self.get_language_model_scale())
+        current_timestep = language_token_probabilities.shape[1]-1
+
+        token_probabilities[:,current_timestep, :] = (token_probabilities[:,current_timestep, :] * (1.0 - self.get_language_model_scale()) +
+            language_token_probabilities[:,current_timestep, :] * (self.get_language_model_scale()))
 
         return self.decode_probabilities(input_tokens, token_probabilities, label_lengths, beam_size)
 
@@ -140,8 +145,8 @@ class TransformerAcousticModel:
 
         indices = numpy.argsort(token_probabilities[:,:,:], axis=-1)
 
-        #logger.debug("probabilities: " + str(token_probabilities))
-        #logger.debug("label lengths: " + str(label_lengths))
+        logger.debug("probabilities: " + str(token_probabilities))
+        logger.debug("label lengths: " + str(label_lengths))
 
         labels = []
         probabilities = []
@@ -153,7 +158,7 @@ class TransformerAcousticModel:
             for b in range(beam_size):
                 reverse_index = -b - 1
                 next_index = indices[i,label_lengths[i][0]-1, reverse_index]
-                next_token = next_index + 1
+                next_token = min(next_index + 1, self.get_document_end_token()-1)
                 probability = token_probabilities[i, label_lengths[i][0]-1, next_index]
 
                 label = self.compute_label(input_tokens[i, 1:label_lengths[i][0]], next_token, token_probabilities.shape[1])
@@ -180,8 +185,8 @@ class TransformerAcousticModel:
             else:
                 suffix = ""
 
-        #logger.debug("input_tokens: " + str(input_tokens))
-        #logger.debug("indices: " + str(sample_indices))
+        logger.debug("input_tokens: " + str(input_tokens))
+        logger.debug("indices: " + str(sample_indices))
 
         label = self.text_encoder_layer.decode(clamped_sample_indices) + suffix
 

@@ -20,6 +20,7 @@ class AudioCsvDataset:
             self.get_path(), [tf.string, tf.string])
 
         if self.has_maximum_size():
+            logger.debug("Loading at most " + str(self.get_maximum_size()) + " samples")
             line_dataset = line_dataset.take(self.get_maximum_size())
 
         dataset = line_dataset.map(lambda x, y :
@@ -62,6 +63,7 @@ class AudioCsvDataset:
                 return
 
     def load_file(self, path, label):
+        #tf.print("Loading file: " + path)
         audio_file = tf.io.read_file(path)
 
         audio_samples, audio_sample_rate = self.decode(audio_file, path)
@@ -80,12 +82,14 @@ class AudioCsvDataset:
 
     def decode(self, audio_file, path):
         if self.is_wav(path):
-            return tfio.audio.decode_wav(audio_file, dtype=tf.float32), 16384
+            return tf.cast(tfio.audio.decode_wav(audio_file, dtype=tf.int16), tf.float32) / tf.constant(16384.0, dtype=tf.float32), 16384
 
         return tfio.audio.decode_mp3(audio_file), 16384
 
     def is_wav(self, path):
-        return tf.strings.split(path)[-1] == '.wav'
+        last_segment = tf.strings.split(path, sep='.')[-1]
+
+        return last_segment == 'wav'
 
     def get_path(self):
         return self.source_config['path']

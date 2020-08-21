@@ -10,7 +10,7 @@ class BeamSearchDecoder:
         self.config = config
         self.test_dataset = test_dataset
 
-        self.model = ModelFactory(self.config).create()
+        self.model = AcousticModelFactory(self.config).create()
 
     def predict(self):
         for batch, label_batch in self.test_dataset.get_tensorflow_dataset():
@@ -45,7 +45,7 @@ class BeamSearchDecoder:
         remaining_beam = []
 
         for beam_entry in beam:
-            if self.is_finished(beam_entry["label"]):
+            if self.is_finished(beam_entry):
                 if best_finished_label is None or beam_entry["log-probability"] > best_finished_label["log-probability"]:
                     best_finished_label = beam_entry
 
@@ -65,8 +65,12 @@ class BeamSearchDecoder:
 
         return beam[0]
 
-    def is_finished(self, predicted_label):
-        return predicted_label.find("<END>") != -1
+    def is_finished(self, beam_entry):
+
+        if beam_entry["log-probability"] < self.get_minimum_probability():
+            return True
+
+        return beam_entry["label"].find("<END>") != -1
 
     def get_batch_slice(self, batch, label, sample):
         audio_samples = batch[0][sample:sample+1, :]
@@ -83,5 +87,8 @@ class BeamSearchDecoder:
 
     def get_beam_size(self):
         return int(self.config["predictor"]["beam-size"])
+
+    def get_minimum_probability(self):
+        return (self.config["predictor"]["minimum-log-probability"])
 
 

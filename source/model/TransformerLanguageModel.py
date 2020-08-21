@@ -77,7 +77,7 @@ class TransformerLanguageModel:
 
         self.inference_model = tf.keras.Model(
             inputs=[labels],
-            outputs=[token_probabilities, label_lengths])
+            outputs=[label_indices, token_probabilities, label_lengths])
 
     def run_transformer_decoder(self, labels, label_lengths):
 
@@ -95,7 +95,18 @@ class TransformerLanguageModel:
         self.text_encoder_layer = TextEncoderLayer(
             self.config, self.config["language-model"], self.training_dataset)
 
-        return self.text_encoder_layer(labels)
+        batch_size = tf.shape(labels)[0]
+
+        label_indices, target_label_indices, label_lengths = self.text_encoder_layer(labels)
+
+        logger.debug("Label indices: " + str(label_indices) + ", shape: " + str(tf.shape(label_indices)))
+        logger.debug("Target Label indices: " + str(target_label_indices) + ", shape: " + str(tf.shape(target_label_indices)))
+        logger.debug("Label lengths: " + str(label_lengths) + ", shape: " + str(tf.shape(label_lengths)))
+
+        return label_indices, target_label_indices, label_lengths
+
+    def predict_on_batch(self, x):
+        return self.inference_model.predict_on_batch(x)
 
     def get_vocab_size(self):
         return self.text_encoder_layer.get_total_vocab_size()

@@ -66,25 +66,36 @@ class TextEncoderLayer(tf.keras.layers.Layer):
                 # convert to tensors
                 encoded = tf.convert_to_tensor(encoded, dtype=tf.int64)
                 lengths = tf.convert_to_tensor(lengths, dtype=tf.int64)
+                batch_size = tf.convert_to_tensor(len(encoded), dtype=tf.int64)
 
                 lengths = [[length] for length in lengths]
 
-                return encoded, lengths
+                return encoded, lengths, batch_size
 
-            encoded, lengths = tf.py_function(encode, [inputs], [tf.int64, tf.int64])
+            encoded, lengths, batch_size = tf.py_function(encode, [inputs], [tf.int64, tf.int64, tf.int64])
 
             encoded_text = encoded[:,:-1]
+
             target_encoded_text = encoded[:, 1:]
 
             label_lengths = lengths - 1
 
-            logger.debug("encoded text " + str(encoded_text))
-            logger.debug("target encoded text " + str(target_encoded_text))
-            logger.debug("label lengths " + str(label_lengths))
+            sequence_length = tf.cast(tf.reduce_max(label_lengths), tf.int32)
+
+            encoded_text = tf.reshape(encoded_text, (batch_size, sequence_length))
+            target_encoded_text = tf.reshape(target_encoded_text, (batch_size, sequence_length))
+            label_lengths = tf.reshape(label_lengths, (batch_size, 1))
+
+            logger.debug("encoded text " + str(encoded_text) + " shape: " + str(tf.shape(encoded_text)))
+            logger.debug("target encoded text " + str(target_encoded_text) + " shape: " + str(tf.shape(target_encoded_text)))
+            logger.debug("label lengths " + str(label_lengths) + " shape: " + str(tf.shape(label_lengths)))
 
             return encoded_text, target_encoded_text, label_lengths
 
     def decode(self, indices):
+        if len(indices) == 0:
+            return "<START>"
+
         if indices[-1] == self.get_document_end_token():
             return "<START>" + self.encoder.decode(indices[:-1]) + "<END>"
         else:

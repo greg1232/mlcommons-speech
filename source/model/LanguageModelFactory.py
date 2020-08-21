@@ -13,10 +13,7 @@ class LanguageModelFactory:
 
     def create(self):
 
-        if self.model_name == "TransformerModel":
-            return TransformerModel(self.config,
-                self.training_data, self.validation_data)
-        elif self.model_name == "TransformerLanguageModel":
+        if self.model_name == "TransformerLanguageModel":
             return TransformerLanguageModel(self.config,
                 self.training_data, self.validation_data)
 
