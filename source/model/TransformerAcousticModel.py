@@ -281,7 +281,7 @@ class TransformerAcousticModel:
         return int(self.config['acoustic-model']['maximum-sequence-length'])
 
     def get_language_model_scale(self):
-        return int(self.config['acoustic-model']['language-model-scale'])
+        return float(self.config['acoustic-model']['language-model-scale'])
 
 
 

@@ -1,8 +1,8 @@
 {
-    "model" :
+    "acoustic-model" :
     {
-        "type" : "TransformerModel",
-        "epochs" : 200,
+        "type" : "TransformerAcousticModel",
+        "epochs" : 20,
         "batch-size" : 4,
         "early-stopping-patience" : 50,
         "layer-size" : 512,
@@ -11,21 +11,52 @@
         "vocab-size" : 16384,
         "data-shuffle-window" : 200,
         "learning-rate": 1e-4,
-        "frame-size" : 2048,
+        "ctc-loss-scale" : 0.1,
+        "frame-size" : 1024,
         "frame-step" : 768,
-        "dropout" : 0.1,
+        "dropout" : 0.0,
+        "language-model-scale" : 0.5,
+        "enable-profiler" : false,
+        "maximum-sequence-length" : 256,
+        "shuffle-window-size" : 128
+    },
+    "language-model" :
+    {
+        "directory" : "models/librivox/baseline-1/language-model",
+        "type" : "TransformerLanguageModel",
+        "epochs" : 0,
+        "batch-size" : 4,
+        "early-stopping-patience" : 5,
+        "layer-size" : 512,
+        "layer-count" : 1,
+        "attention-head-count" : 1,
+        "vocab-size" : 16384,
+        "learning-rate": 1e-4,
+        "dropout" : 0.0,
         "enable-profiler" : false,
         "shuffle-window-size" : 128,
         "maximum-sequence-length" : 256,
         "maximum-subword-length" : 20,
         "maximum-corpus-size-for-vocab" : 1e5
     },
-    "training-set" :
+    "language-training-set" :
+    {
+        "type" : "TextCsvDataset",
+        "path" : "s3://mlcommons-language-data/common-crawl/CC-MAIN-20190817203056-20190817225056-00001-train.csv",
+        "maximum-size" : 512
+    },
+    "language-development-set" :
+    {
+        "type" : "TextCsvDataset",
+        "path" : "s3://mlcommons-language-data/common-crawl/CC-MAIN-20190817203056-20190817225056-00001-test.csv",
+        "maximum-size" : 512
+    },
+    "acoustic-training-set" :
     {
         "type" : "AudioCsvDataset",
         "path" : "s3://mlcommons-speech-data/ldc/timit/train.csv"
     },
-    "development-set" :
+    "acoustic-development-set" :
     {
         "type" : "AudioCsvDataset",
         "path" : "s3://mlcommons-speech-data/ldc/timit/test.csv"
@@ -33,7 +64,15 @@
     "system" :
     {
         "cache" : "data/cache"
+    },
+    "predictor" :
+    {
+        "type" : "BeamSearchDecoder",
+        "beam-expansion-size" : 2,
+        "beam-size" : 3,
+        "minimum-log-probability" : -1000.0
     }
+
 
 
 }

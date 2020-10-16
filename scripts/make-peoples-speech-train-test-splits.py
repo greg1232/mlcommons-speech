@@ -13,8 +13,8 @@ def make_splits(arguments):
     get_common_voice_samples(samples)
     get_librispeech_samples(samples)
     get_librivox_samples(samples)
-    #get_voicery_samples(samples)
-    #get_cc_search_samples(samples)
+    get_voicery_samples(samples)
+    get_cc_search_samples(samples)
 
     train, test, development = split_samples(arguments, samples)
 
@@ -52,20 +52,90 @@ def get_librivox_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.1/data.csv")
 
 def get_voicery_samples(samples):
-    assert False, "Not implemented."
+    mp3_files = get_mp3_files("gs://the-peoples-speech-aws-import/voicery")
+
+    for name, path in mp3_files.items():
+        transcript = get_voicery_transcript(path)
+
+        samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
+
+def get_voicery_transcript(path):
+    base = os.path.split_ext(path)[0]
+
+    normalized_path = base + ".aligned.txt"
+
+    with open(normalized_path) as normalized_transcript_file:
+        return normalized_transcript_file.read().strip()
 
 def get_cc_search_samples(samples):
     extract_aligned_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020", "gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020_aligned_data_9_15_20")
 
-def extract_alignd_samples(samples, audio_path, alignment_path):
+def extract_aligend_samples(samples, audio_path, alignment_path):
+    mp3_files = get_mp3_files(audio_path)
 
+    blobs = storage_client.list_blobs(alignment_path)
+
+    for blob in blobs:
+        if is_aligned_file(blob.name):
+            alignments = load_alignments(blob.name)
+
+            mp3_path = alignments[0]["path"]
+            mp3 = get_mp3(mp3_path)
+
+            for alignment in alignments:
+                name = alignment["name"]
+                start_time = alignment["start"]
+                end_time = alignment["end"]
+                trascript = alignment["aligned"]
+                metadata = alignment
+
+                aligned_path = make_alignment(mp3, name, start_time, end_time)
+
+                samples.append({"path" : aligned_path, "caption" : transcript, "metadata" : metadata})
+
+def is_aligned_file(path):
+    return path.find("aligned.json") != -1
+
+def load_alignments(path):
+    with open(path) as alignment_file:
+        return json.load(alignment_file), get_mp3_path_for_aligned_file(path)
+
+def get_mp3_path_for_aligned_file(path):
+    # gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020_aligned_data_9_15_20/CAPTIONED_DATA/output/10_10_2017_Essex_Junction_Trustees/aligned.json
+    # gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020/CAPTIONED_DATA/10_10_2017_Essex_Junction_Trustees/10_10_2017_Essex_Junction_Trustees.mp3
+
+    parts = split_all(path)
+
+    return os.path.join(parts[:2] + ["Aug_18_2020", "CAPTIONED_DATA"] + parts[-2:-1] + parts[-2:-1]) + ".mp3"
+
+def split_all(path):
+    allparts = []
+    while True:
+        parts = os.path.split(path)
+        if parts[0] == path:  # sentinel for absolute paths
+            allparts.insert(0, parts[0])
+            break
+        elif parts[1] == path: # sentinel for relative paths
+            allparts.insert(0, parts[1])
+            break
+        else:
+            path = parts[0]
+            allparts.insert(0, parts[1])
+    return allparts
+
+def get_mp3_files(audio_path):
     storage_client = storage.Client()
 
     # Note: Client.list_blobs requires at least package version 1.17.0.
-    blobs = storage_client.list_blobs(path)
+    blobs = storage_client.list_blobs(audio_path)
+
+    mp3_files = {}
 
     for blob in blobs:
-        if blob.name
+        if is_mp3(blob.name):
+            mp3_files[get_key(blob.name)] = blob.name
+
+    return mp3_files
 
 def split_samples(arguments, samples):
 
