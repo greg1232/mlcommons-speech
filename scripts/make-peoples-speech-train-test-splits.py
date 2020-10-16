@@ -3,6 +3,7 @@ from google.cloud import storage
 from argparse import ArgumentParser
 import logging
 import csv
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -11,10 +12,10 @@ from smart_open import open
 def make_splits(arguments):
     samples = []
 
-    get_common_voice_samples(samples)
-    get_librispeech_samples(samples)
-    get_librivox_samples(samples)
-    get_voicery_samples(samples)
+    #get_common_voice_samples(samples)
+    #get_librispeech_samples(samples)
+    #get_librivox_samples(samples)
+    #get_voicery_samples(samples)
     get_cc_search_samples(samples)
 
     train, test, development = split_samples(arguments, samples)
@@ -132,16 +133,35 @@ def split_all(path):
 def get_mp3_files(audio_path):
     storage_client = storage.Client()
 
+    logger.debug("Getting MP3 files under " + audio_path)
+
     # Note: Client.list_blobs requires at least package version 1.17.0.
-    blobs = storage_client.list_blobs(audio_path)
+    bucket_name, prefix = get_bucket_and_prefix(audio_path)
+    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
 
     mp3_files = {}
 
     for blob in blobs:
         if is_mp3(blob.name):
-            mp3_files[get_key(blob.name)] = blob.name
+            path = os.path.join("gs://" + bucket_name, blob.name)
+            mp3_files[get_key(blob.name)] = path
+
+    logger.debug(" Found " + str(len(mp3_files)) + " mp3 files")
 
     return mp3_files
+
+
+def get_bucket_and_prefix(path):
+    parts = split_all(path[5:])
+
+    return parts[0], os.path.join(*parts[1:])
+
+def is_mp3(path):
+    return os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
+
+def get_key(path):
+    parts = split_all(path)
+    return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
 
 def split_samples(arguments, samples):
 
