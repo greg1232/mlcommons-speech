@@ -2,6 +2,7 @@
 from google.cloud import storage
 from argparse import ArgumentParser
 import logging
+import csv
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +32,13 @@ def load_csv_samples(samples, csv_path):
         reader = csv.reader(csv_file, delimiter=',', quotechar='"')
 
         for row in reader:
-            path, caption
+            path, caption = row[0], row[1]
 
             metadata = {}
             if len(row) >= 3:
                 metadata = json.loads(row[2])
 
-            samples.append({"path" : path, "caption" : catpion, "metadata" : metadata})
+            samples.append({"path" : path, "caption" : caption, "metadata" : metadata})
 
 def get_librispeech_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-clean.csv")
