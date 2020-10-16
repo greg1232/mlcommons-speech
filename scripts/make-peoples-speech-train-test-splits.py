@@ -27,6 +27,7 @@ def get_common_voice_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test.csv")
 
 def load_csv_samples(samples, csv_path):
+    new_samples = []
     with open(csv_path) as csv_file:
         reader = csv.reader(csv_file, delimiter=',', quotechar='"')
 
@@ -37,7 +38,12 @@ def load_csv_samples(samples, csv_path):
             if len(row) >= 3:
                 metadata = json.loads(row[2])
 
-            samples.append({"path" : path, "caption" : catpion, "metadata" : metadata})
+            new_samples.append({"path" : path, "caption" : catpion, "metadata" : metadata})
+
+
+    logger.info("Loaded " + str(len(new_samples)) + " from " + csv_path)
+
+    samples.extend(new_samples)
 
 def get_librispeech_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-clean.csv")
