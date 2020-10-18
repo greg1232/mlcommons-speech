@@ -11,12 +11,14 @@ from pydub import AudioSegment
 
 logger = logging.getLogger(__name__)
 
+storage_client = storage.Client()
+
 def main():
     parser = ArgumentParser("This program converts the DSAlign "
         "data format to the default CSV audio file format.")
 
     parser.add_argument("-i", "--input-path", default = "",
-        help = "The S3 path to the DSAligned dataset.")
+        help = "The GCP path to the DSAligned dataset.")
     parser.add_argument("--max-count", default = 1e9,
         help = "The maximum number of audio samples to extract.")
     parser.add_argument("--cache-directory", default = "data",
@@ -92,23 +94,20 @@ def is_audio(path):
 def get_corresponding_align_file_name(path):
     return os.path.splitext(path)[0] + ".aligned"
 
-def exists(bucket_name, path):
-
-    client = boto3.resource('s3')
-    try:
-        client.Object(bucket_name, path).load()
-    except botocore.exceptions.ClientError as e:
+def exists(bucket_name, prefix):
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.get_blob(prefix)
+    if blob is None:
         return False
-
-    return True
+    return blob.exists()
 
 def load_alignment(bucket_name, path, arguments):
-    local_cache = LocalFileCache(arguments, "s3://" + os.path.join(bucket_name, path)).get_path()
+    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
     with open(local_cache) as json_file:
         return json.load(json_file)
 
 def load_audio(bucket_name, path, arguments):
-    local_cache = LocalFileCache(arguments, "s3://" + os.path.join(bucket_name, path)).get_path()
+    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
 
     return AudioSegment.from_mp3(local_cache)
 
@@ -135,22 +134,31 @@ def get_output_path(arguments, total_count):
 
 def get_all_object_paths(arguments):
 
-    client = boto3.client('s3')
-    paginator = client.get_paginator('list_objects_v2')
+    bucket_name, prefix = get_bucket_and_prefix(arguments["input_path"])
+    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
 
-    bucket_name, prefix_name = get_bucket_and_prefix_name(arguments["input_path"])
+    for blob in blobs:
+        yield bucket_name, blob.name
 
-    page_iterator = paginator.paginate(Bucket = bucket_name, Prefix = prefix_name)
-    for page in page_iterator:
-        logger.debug("Iterating through page with " + str(page["KeyCount"]) + " objects")
+def get_bucket_and_prefix(path):
+    parts = split_all(path[5:])
 
-        for page_object in page['Contents']:
-            yield bucket_name, page_object['Key']
+    return parts[0], os.path.join(*parts[1:])
 
-def get_bucket_and_prefix_name(path):
-    result = urllib.parse.urlparse(path, allow_fragments=False)
-
-    return result.netloc, result.path.lstrip("/")
+def split_all(path):
+    allparts = []
+    while True:
+        parts = os.path.split(path)
+        if parts[0] == path:  # sentinel for absolute paths
+            allparts.insert(0, parts[0])
+            break
+        elif parts[1] == path: # sentinel for relative paths
+            allparts.insert(0, parts[1])
+            break
+        else:
+            path = parts[0]
+            allparts.insert(0, parts[1])
+    return allparts
 
 def setup_logger(arguments):
 
@@ -176,9 +184,7 @@ def setup_logger(arguments):
 
 
 class LocalFileCache:
-    """ Supports caching.  Currently it supports read-only access to S3.
-
-        TODO: match the MD5 hash of the object against S3 before downloading again
+    """ Supports caching.  Currently it supports read-only access to GCS.
     """
 
     def __init__(self, config, remote_path):
@@ -208,32 +214,24 @@ class LocalFileCache:
 
         os.makedirs(directory, exist_ok=True)
 
-        s3 = boto3.client("s3")
-
-        bucket, key = self.get_bucket_and_key()
+        bucket, key = get_bucket_and_prefix_name(self.remote_path)
 
         logger.info(
             "Downloading '" + self.remote_path + "' to '" + self.get_path() + "'"
         )
 
-        s3.download_file(bucket, key, self.get_path())
+        bucket = storage_client.get_bucket(bucket)
+        blob = bucket.get_blob(key)
+
+        blob.download_to_filename(bucket, key, self.get_path())
 
     def is_remote_path(self, path):
-        return path.find("s3:") == 0
+        return path.find("gs:") == 0
 
     def compute_local_path(self):
-        bucket, key = self.get_bucket_and_key()
-        if key.endswith(".engine") or key.endswith(".mp3"):
-            return self.compute_s3_resource_local_path(key)
+        bucket, key = get_bucket_and_prefix_name(self.remote_path)
         return os.path.join(self.config["system"]["cache-directory"], key)
 
-    def compute_s3_resource_local_path(self, key):
-        repo_dir = "/".join(os.path.abspath(__file__).split("/")[:-3])
-        path = os.path.join(repo_dir, "models", key)
-        return path
-
-    def get_bucket_and_key(self):
-        return self.remote_path.split("/", 2)[-1].split("/", 1)
 
 
 
