@@ -122,13 +122,13 @@ def save_training_sample(csv_writer, metadata_writer, audio_segment, text, entry
 
     logger.debug("Saving sample: " + path)
 
-    audio_segment.export(path, format="mp3")
+    audio_segment.export(path, format="wav")
 
     csv_writer.writerow([path, text])
     metadata_writer.writerow([path, json.dumps(entry)])
 
 def get_output_path(arguments, total_count):
-    return os.path.join(arguments["output_path"], "data", str(total_count) + ".mp3")
+    return os.path.join(arguments["output_path"], "data", str(total_count) + ".wav")
 
 def get_all_object_paths(arguments):
 
