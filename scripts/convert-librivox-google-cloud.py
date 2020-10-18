@@ -3,9 +3,7 @@ import logging
 import csv
 import json
 import os
-import boto3
-import botocore
-import urllib.parse
+from google.cloud import storage
 
 from pydub import AudioSegment
 
