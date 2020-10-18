@@ -10,7 +10,6 @@ from pydub import AudioSegment
 logger = logging.getLogger(__name__)
 
 storage_client = storage.Client()
-file_uploader = FileUploader()
 
 def main():
     parser = ArgumentParser("This program converts the DSAlign "
@@ -57,6 +56,8 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
     total_count = 0
 
+    file_uploader = FileUploader()
+
     for bucket_name, file_name in get_all_object_paths(arguments):
         if not is_audio(file_name):
             continue
@@ -80,12 +81,14 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
             audio_segment = extract_audio(audio, start, end)
 
-            save_training_sample(csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count)
+            save_training_sample(file_uploader, csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count)
 
             total_count += 1
 
             if total_count >= int(arguments["max_count"]):
                 return
+
+        delete_audio(bucket_name, file_name, arguments)
 
 def is_audio(path):
     return os.path.splitext(path)[1] == '.mp3'
@@ -110,10 +113,14 @@ def load_audio(bucket_name, path, arguments):
 
     return AudioSegment.from_mp3(local_cache)
 
+def delete_audio(bucket_name, path, arguments):
+    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
+    os.remove(local_cache)
+
 def extract_audio(audio, start, end):
     return audio[start:end]
 
-def save_training_sample(csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count):
+def save_training_sample(file_uploader, csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count):
     path = get_output_path(arguments, total_count)
     local_path = get_local_path(arguments, total_count)
 
