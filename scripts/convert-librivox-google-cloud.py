@@ -199,7 +199,7 @@ class FileUploader:
     def __init__(self):
         self.queue = queue.Queue()
 
-        thread = threading.Thread(upload_files_worker, (self.queue,))
+        thread = threading.Thread(target=upload_files_worker, args=(self.queue,))
         thread.start()
 
     def upload(self, path, local_path):
