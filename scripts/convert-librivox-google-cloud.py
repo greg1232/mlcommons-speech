@@ -207,7 +207,7 @@ class FileUploader:
         for i in range(int(arguments["worker_count"])):
             thread = threading.Thread(target=upload_files_worker, args=(self.queue,))
             thread.start()
-            self.theads.append(thread)
+            self.threads.append(thread)
 
     def upload(self, path, local_path):
         self.queue.put((path, local_path, False))
