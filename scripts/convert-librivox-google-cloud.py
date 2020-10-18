@@ -60,7 +60,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
     total_count = 0
 
-    file_uploader = FileUploader()
+    file_uploader = FileUploader(arguments)
 
     for bucket_name, file_name in get_all_object_paths(arguments):
         if not is_audio(file_name):
