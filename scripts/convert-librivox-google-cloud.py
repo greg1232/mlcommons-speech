@@ -94,7 +94,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
         delete_audio(bucket_name, file_name, arguments)
 
-    file_uploader.finished()
+    file_uploader.join()
 
 def is_audio(path):
     return os.path.splitext(path)[1] == '.mp3'
