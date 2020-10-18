@@ -212,7 +212,7 @@ def upload_files_worker(queue):
 
         logger.debug("Uploading " + local_path + " to " + path)
 
-        bucket_name, key = get_bucket_and_prefix(self.remote_path)
+        bucket_name, key = get_bucket_and_prefix(path)
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.get_blob(key)
 
