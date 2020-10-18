@@ -90,9 +90,12 @@ def update_csv(arguments, csv_writer, metadata_writer):
             total_count += 1
 
             if total_count >= int(arguments["max_count"]):
-                return
+                break
 
         delete_audio(bucket_name, file_name, arguments)
+
+        if total_count >= int(arguments["max_count"]):
+            break
 
     file_uploader.join()
 
