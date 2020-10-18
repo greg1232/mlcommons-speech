@@ -140,7 +140,7 @@ class MP3File:
 
     def get(self):
         if self.mp3 is None:
-            with open(mp3_path, 'rb', buffering=0) as mp3_file:
+            with open(self.mp3_path, 'rb', buffering=0) as mp3_file:
                 self.mp3 = AudioSegment.from_mp3(mp3_file)
 
         return self.mp3
