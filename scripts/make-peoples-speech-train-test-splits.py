@@ -93,7 +93,7 @@ def extract_aligned_samples(samples, audio_path, alignment_path):
             alignment_file_name = "gs://" + os.path.join(bucket_name, blob.name)
             alignments, mp3_path = load_alignments(alignment_file_name)
 
-            if not blob_exists(mp3_path):
+            if not blob_exists(mp3_files, mp3_path):
                 continue
 
             mp3_size = get_blob_size(mp3_path)
