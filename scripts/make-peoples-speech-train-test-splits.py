@@ -63,7 +63,7 @@ def get_librivox_samples(samples):
 def get_voicery_samples(samples):
     mp3_files = get_mp3_files("gs://the-peoples-speech-aws-import/voicery")
 
-    for name, path in mp3_files.items():
+    for path, name in mp3_files.items():
         transcript = get_voicery_transcript(path)
 
         samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
@@ -93,9 +93,12 @@ def extract_aligned_samples(samples, audio_path, alignment_path):
             alignment_file_name = "gs://" + os.path.join(bucket_name, blob.name)
             alignments, mp3_path = load_alignments(alignment_file_name)
 
+            if not blob_exists(mp3_path):
+                continue
+
             mp3_size = get_blob_size(mp3_path)
 
-            if  mp3_size > 75e6:
+            if mp3_size > 75e6:
                 logger.debug("Skipping mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB which is too big")
                 continue
 
@@ -109,7 +112,7 @@ def extract_aligned_samples(samples, audio_path, alignment_path):
                 metadata = alignment
                 path = os.path.splitext(mp3_path)[0] + "-" + str(index) + ".mp3"
 
-                aligned_path = make_alignment(mp3, path, start_time, end_time)
+                aligned_path = make_alignment(mp3_files, mp3, path, start_time, end_time)
 
                 samples.append({"path" : aligned_path, "caption" : transcript, "metadata" : metadata})
 
@@ -127,28 +130,30 @@ def get_blob_size(path):
     blob = bucket.get_blob(prefix)
     return blob.size
 
-def blob_exists(path):
+def blob_exists(paths, path):
+    return path in paths
 
-    bucket_name, prefix = get_bucket_and_prefix(path)
-    try:
-        bucket = storage_client.get_bucket(bucket_name)
-        blob = bucket.get_blob(prefix)
-    except:
-        return False
-    if blob is None:
-        return False
-    return blob.exists()
+class MP3File:
+    def __init__(self, mp3_path):
+        self.mp3_path = mp3_path
+        self.mp3 = None
+
+    def get(self):
+        if self.mp3 is None:
+            with open(mp3_path, 'rb', buffering=0) as mp3_file:
+                self.mp3 = AudioSegment.from_mp3(mp3_file)
+
+        return self.mp3
 
 def load_audio(mp3_path):
-    with open(mp3_path, 'rb', buffering=0) as mp3_file:
-        return AudioSegment.from_mp3(mp3_file)
+    return MP3File(mp3_path)
 
-def make_alignment(mp3, path, start_time, end_time):
+def make_alignment(mp3_files, mp3, path, start_time, end_time):
 
-    if blob_exists(path):
+    if blob_exists(mp3_files, path):
         logger.debug("Skipping existing alignment " + path)
     else:
-        segment = mp3[start_time:end_time]
+        segment = mp3.get()[start_time:end_time]
         logger.debug("Saving alignment to " + path)
         with open(path, "wb", buffering=0) as mp3_file:
             segment.export(mp3_file, format="mp3")
@@ -199,7 +204,7 @@ def get_mp3_files(audio_path):
     for blob in blobs:
         if is_mp3(blob.name):
             path = os.path.join("gs://" + bucket_name, blob.name)
-            mp3_files[get_key(blob.name)] = path
+            mp3_files[path] = get_key(blob.name)
 
     logger.debug(" Found " + str(len(mp3_files)) + " mp3 files")
 
