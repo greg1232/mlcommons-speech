@@ -214,7 +214,7 @@ def upload_files_worker(queue):
 
         bucket_name, key = get_bucket_and_prefix(path)
         bucket = storage_client.get_bucket(bucket_name)
-        blob = bucket.get_blob(key)
+        blob = bucket.blob(key)
 
         blob.upload_from_filename(local_path)
 
