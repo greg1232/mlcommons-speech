@@ -210,6 +210,8 @@ def upload_files_worker(queue):
     while True:
         path, local_path = queue.get()
 
+        logger.debug("Uploading " + local_path + " to " + path)
+
         bucket_name, key = get_bucket_and_prefix(self.remote_path)
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.get_blob(key)
@@ -217,8 +219,6 @@ def upload_files_worker(queue):
         blob.upload_from_filename(local_path)
 
         os.remove(local_path)
-
-        logger.debug("Uploaded " + local_path + " to " + path)
 
 class LocalFileCache:
     """ Supports caching.  Currently it supports read-only access to GCS.
