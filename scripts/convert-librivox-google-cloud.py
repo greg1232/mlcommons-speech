@@ -25,6 +25,8 @@ def main():
         help = "The local path to cache.")
     parser.add_argument("-o", "--output-path", default = "",
         help = "The output path to save the dataset.")
+    parser.add_argument("--worker-count", default = 4,
+        help = "The number of worker threads.")
     parser.add_argument("-v", "--verbose", default = False,
         action="store_true",
         help = "Set the log level to debug, "
@@ -196,11 +198,12 @@ def setup_logger(arguments):
     logger.addHandler(ch)
 
 class FileUploader:
-    def __init__(self):
-        self.queue = queue.Queue()
+    def __init__(self, arguments):
+        self.queue = queue.Queue(maxsize=512)
 
-        thread = threading.Thread(target=upload_files_worker, args=(self.queue,))
-        thread.start()
+        for i in int(argumnts["worker_count"]):
+            thread = threading.Thread(target=upload_files_worker, args=(self.queue,))
+            thread.start()
 
     def upload(self, path, local_path):
         self.queue.put((path, local_path))
