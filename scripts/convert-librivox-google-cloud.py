@@ -94,6 +94,8 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
         delete_audio(bucket_name, file_name, arguments)
 
+    file_uploader.finished()
+
 def is_audio(path):
     return os.path.splitext(path)[1] == '.mp3'
 
@@ -200,18 +202,30 @@ def setup_logger(arguments):
 class FileUploader:
     def __init__(self, arguments):
         self.queue = queue.Queue(maxsize=512)
+        self.threads = []
 
         for i in range(int(arguments["worker_count"])):
             thread = threading.Thread(target=upload_files_worker, args=(self.queue,))
             thread.start()
+            self.theads.append(thread)
 
     def upload(self, path, local_path):
-        self.queue.put((path, local_path))
+        self.queue.put((path, local_path, False))
 
+    def join(self):
+
+        for thread in self.threads:
+            self.queue.put((None, None, True))
+
+        for thread in self.threads:
+            thread.join()
 
 def upload_files_worker(queue):
     while True:
-        path, local_path = queue.get()
+        path, local_path, is_finished = queue.get()
+
+        if is_finished:
+            break
 
         logger.debug("Uploading " + local_path + " to " + path)
 
