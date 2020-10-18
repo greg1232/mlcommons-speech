@@ -221,7 +221,7 @@ class LocalFileCache:
         bucket = storage_client.get_bucket(bucket)
         blob = bucket.get_blob(key)
 
-        blob.download_to_filename(bucket, key, self.get_path())
+        blob.download_to_filename(self.local_path)
 
     def is_remote_path(self, path):
         return path.find("gs:") == 0
