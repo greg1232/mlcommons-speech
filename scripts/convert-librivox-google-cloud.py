@@ -10,6 +10,7 @@ from pydub import AudioSegment
 logger = logging.getLogger(__name__)
 
 storage_client = storage.Client()
+file_uploader = FileUploader()
 
 def main():
     parser = ArgumentParser("This program converts the DSAlign "
@@ -114,21 +115,28 @@ def extract_audio(audio, start, end):
 
 def save_training_sample(csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count):
     path = get_output_path(arguments, total_count)
+    local_path = get_local_path(arguments, total_count)
 
-    directory = os.path.dirname(path)
+    directory = os.path.dirname(local_path)
 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    logger.debug("Saving sample: " + path)
+    logger.debug("Saving sample: " + path + " at local path " + local_path)
 
-    audio_segment.export(path, format="wav")
+    audio_segment.export(local_path, format="wav")
+
+    file_uploader.upload(path, local_path)
 
     csv_writer.writerow([path, text])
     metadata_writer.writerow([path, json.dumps(entry)])
 
 def get_output_path(arguments, total_count):
     return os.path.join(arguments["output_path"], "data", str(total_count) + ".wav")
+
+def get_local_path(arguments, total_count):
+    bucket, key = get_bucket_and_prefix(get_output_path(arguments, total_count))
+    return os.path.join(arguments["system"]["cache-directory"], key)
 
 def get_all_object_paths(arguments):
 
@@ -178,8 +186,28 @@ def setup_logger(arguments):
     # add ch to logger
     logger.addHandler(ch)
 
+class FileUploader:
+    def __init__(self):
+        self.queue = queue.Queue()
+
+        thread = threading.Thread(upload_files_worker, (self.queue,))
+        thread.start()
+
+    def upload(self, path, local_path):
+        self.queue.put((path, local_path))
 
 
+def upload_files_worker(queue):
+    while True:
+        path, local_path = queue.get()
+
+        bucket_name, key = get_bucket_and_prefix(self.remote_path)
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.get_blob(key)
+
+        blob.upload_from_filename(local_path)
+
+        os.remove(local_path)
 
 class LocalFileCache:
     """ Supports caching.  Currently it supports read-only access to GCS.
