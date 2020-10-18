@@ -212,7 +212,7 @@ class LocalFileCache:
 
         os.makedirs(directory, exist_ok=True)
 
-        bucket, key = get_bucket_and_prefix_name(self.remote_path)
+        bucket, key = get_bucket_and_prefix(self.remote_path)
 
         logger.info(
             "Downloading '" + self.remote_path + "' to '" + self.get_path() + "'"
@@ -227,7 +227,7 @@ class LocalFileCache:
         return path.find("gs:") == 0
 
     def compute_local_path(self):
-        bucket, key = get_bucket_and_prefix_name(self.remote_path)
+        bucket, key = get_bucket_and_prefix(self.remote_path)
         return os.path.join(self.config["system"]["cache-directory"], key)
 
 
