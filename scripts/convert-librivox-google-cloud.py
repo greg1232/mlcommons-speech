@@ -218,6 +218,8 @@ def upload_files_worker(queue):
 
         os.remove(local_path)
 
+        logger.debug("Uploaded " + local_path + " to " + path)
+
 class LocalFileCache:
     """ Supports caching.  Currently it supports read-only access to GCS.
     """
