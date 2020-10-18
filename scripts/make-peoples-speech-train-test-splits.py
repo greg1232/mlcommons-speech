@@ -4,6 +4,8 @@ from argparse import ArgumentParser
 import logging
 import csv
 import os
+import json
+from pydub import AudioSegment
 
 logger = logging.getLogger(__name__)
 
@@ -75,35 +77,88 @@ def get_voicery_transcript(path):
         return normalized_transcript_file.read().strip()
 
 def get_cc_search_samples(samples):
-    extract_aligned_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020", "gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020_aligned_data_9_15_20")
+    extract_aligned_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020",
+        "gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020_aligned_data_9_15_20")
 
-def extract_aligend_samples(samples, audio_path, alignment_path):
+def extract_aligned_samples(samples, audio_path, alignment_path):
     mp3_files = get_mp3_files(audio_path)
 
-    blobs = storage_client.list_blobs(alignment_path)
+    storage_client = storage.Client()
+
+    bucket_name, prefix = get_bucket_and_prefix(audio_path)
+    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
 
     for blob in blobs:
         if is_aligned_file(blob.name):
-            alignments = load_alignments(blob.name)
+            alignment_file_name = "gs://" + os.path.join(bucket_name, blob.name)
+            alignments, mp3_path = load_alignments(alignment_file_name)
 
-            mp3_path = alignments[0]["path"]
-            mp3 = get_mp3(mp3_path)
+            mp3_size = get_blob_size(mp3_path)
 
-            for alignment in alignments:
-                name = alignment["name"]
+            if  mp3_size > 75e6:
+                logger.debug("Skipping mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB which is too big")
+                continue
+
+            logger.debug("Loading mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB")
+            mp3 = load_audio(mp3_path)
+
+            for index, alignment in enumerate(alignments):
                 start_time = alignment["start"]
                 end_time = alignment["end"]
-                trascript = alignment["aligned"]
+                transcript = alignment["aligned"]
                 metadata = alignment
+                path = os.path.splitext(mp3_path)[0] + "-" + str(index) + ".mp3"
 
-                aligned_path = make_alignment(mp3, name, start_time, end_time)
+                aligned_path = make_alignment(mp3, path, start_time, end_time)
 
                 samples.append({"path" : aligned_path, "caption" : transcript, "metadata" : metadata})
+
+            # Optionally destroy the object and force the garbage collector to run
+            import gc
+            del mp3
+            gc.collect()
+
+storage_client = storage.Client()
+
+def get_blob_size(path):
+
+    bucket_name, prefix = get_bucket_and_prefix(path)
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.get_blob(prefix)
+    return blob.size
+
+def blob_exists(path):
+
+    bucket_name, prefix = get_bucket_and_prefix(path)
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.get_blob(prefix)
+    except:
+        return False
+    if blob is None:
+        return False
+    return blob.exists()
+
+def load_audio(mp3_path):
+    with open(mp3_path, 'rb', buffering=0) as mp3_file:
+        return AudioSegment.from_mp3(mp3_file)
+
+def make_alignment(mp3, path, start_time, end_time):
+
+    if blob_exists(path):
+        logger.debug("Skipping existing alignment " + path)
+    else:
+        segment = mp3[start_time:end_time]
+        logger.debug("Saving alignment to " + path)
+        with open(path, "wb", buffering=0) as mp3_file:
+            segment.export(mp3_file, format="mp3")
+        del segment
 
 def is_aligned_file(path):
     return path.find("aligned.json") != -1
 
 def load_alignments(path):
+    logger.debug("Loading " + path)
     with open(path) as alignment_file:
         return json.load(alignment_file), get_mp3_path_for_aligned_file(path)
 
@@ -111,9 +166,9 @@ def get_mp3_path_for_aligned_file(path):
     # gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020_aligned_data_9_15_20/CAPTIONED_DATA/output/10_10_2017_Essex_Junction_Trustees/aligned.json
     # gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020/CAPTIONED_DATA/10_10_2017_Essex_Junction_Trustees/10_10_2017_Essex_Junction_Trustees.mp3
 
-    parts = split_all(path)
+    parts = split_all(path[5:])
 
-    return os.path.join(parts[:2] + ["Aug_18_2020", "CAPTIONED_DATA"] + parts[-2:-1] + parts[-2:-1]) + ".mp3"
+    return "gs://" + os.path.join(*(parts[:2] + ["Aug_18_2020", "CAPTIONED_DATA"] + parts[-2:-1] + parts[-2:-1])) + ".mp3"
 
 def split_all(path):
     allparts = []
