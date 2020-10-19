@@ -5,6 +5,7 @@ import json
 import os
 import queue
 import threading
+import gc
 from google.cloud import storage
 
 from pydub import AudioSegment
