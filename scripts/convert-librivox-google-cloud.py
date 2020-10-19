@@ -74,7 +74,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
         mp3_size = get_blob_size(mp3_path)
 
-        if mp3_size > 75e6:
+        if mp3_size > 65e6:
             logger.debug("Skipping mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB which is too big")
             continue
 
