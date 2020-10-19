@@ -71,7 +71,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
         aligned_file_name = get_corresponding_align_file_name(file_name)
 
-        if blob_exists(mp3_files, bucket_name, aligned_file_name):
+        if blob_exists(mp3_files, mp3_path):
             continue
 
         mp3_size = get_blob_size(mp3_path)
@@ -136,8 +136,7 @@ def is_audio(path):
 def get_corresponding_align_file_name(path):
     return os.path.splitext(path)[0] + ".aligned"
 
-def blob_exists(paths, bucket_name, prefix):
-    path = os.path.join("gs://" + bucket_name, prefix)
+def blob_exists(paths, path):
     return path in paths
 
 def get_blob_size(path):
