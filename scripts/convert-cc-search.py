@@ -93,7 +93,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
             text = entry["aligned"]
 
-            save_training_sample(mp3_files, file_uploader, csv_writer, metadata_writer, audio, start, end, text, entry, arguments, total_count)
+            save_training_sample(mp3_files, file_uploader, csv_writer, metadata_writer, mp3, start, end, text, entry, arguments, total_count)
 
             total_count += 1
 
