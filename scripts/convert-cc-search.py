@@ -185,7 +185,7 @@ def delete_audio(mp3, bucket_name, path, arguments):
         os.remove(local_cache)
 
 def extract_audio(audio, start, end):
-    return audio[start:end].get()
+    return audio.get()[start:end]
 
 def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, start, end, text, entry, arguments, total_count):
     path = get_output_path(arguments, total_count)
