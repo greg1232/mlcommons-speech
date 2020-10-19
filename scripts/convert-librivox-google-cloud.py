@@ -57,6 +57,7 @@ def convert_dsalign_to_csv(arguments):
         update_csv(arguments, csv_writer, metadata_writer)
 
 def update_csv(arguments, csv_writer, metadata_writer):
+    mp3_files = dict(get_mp3_files(arguments["input_path"]), **get_mp3_files(arguments["output_path"]))
 
     total_count = 0
 
@@ -66,24 +67,30 @@ def update_csv(arguments, csv_writer, metadata_writer):
         if not is_audio(file_name):
             continue
 
+        mp3_path = os.path.join("gs://" + bucket_name, file_name)
+
         aligned_file_name = get_corresponding_align_file_name(file_name)
 
-        if not exists(bucket_name, aligned_file_name):
+        if not blob_exists(mp3_files, bucket_name, aligned_file_name):
+            continue
+
+        mp3_size = get_blob_size(mp3_path)
+
+        if mp3_size > 75e6:
+            logger.debug("Skipping mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB which is too big")
             continue
 
         logger.debug("Extracting alignments from " + str(aligned_file_name) + ", " + str(file_name))
 
-        alignment = load_alignment(bucket_name, aligned_file_name, arguments)
+        alignments = load_alignments(bucket_name, aligned_file_name, arguments)
 
-        audio = load_audio(bucket_name, file_name, arguments)
+        mp3 = load_audio(mp3_path, arguments)
 
-        for entry in alignment:
+        for entry in alignments:
             start = entry["start"]
             end = entry["end"]
 
             text = entry["aligned"]
-
-            audio_segment = extract_audio(audio, start, end)
 
             save_training_sample(file_uploader, csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count)
 
@@ -91,6 +98,8 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
             if total_count >= int(arguments["max_count"]):
                 break
+
+        del alignments
 
         delete_audio(bucket_name, file_name, arguments)
 
@@ -100,49 +109,71 @@ def update_csv(arguments, csv_writer, metadata_writer):
     file_uploader.join()
 
 def is_audio(path):
-    return os.path.splitext(path)[1] == '.mp3'
+    return os.path.splitext(path)[1] == '.mp3' or os.path.splitext(path)[1] == '.wav'
 
 def get_corresponding_align_file_name(path):
     return os.path.splitext(path)[0] + ".aligned"
 
-def exists(bucket_name, prefix):
+def blob_exists(paths, bucket_name, prefix):
+    path = os.path.join("gs://" + bucket_name, blob.name)
+    return path in paths
+
+def get_blob_size(path):
+    bucket_name, prefix = get_bucket_and_prefix(path)
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.get_blob(prefix)
-    if blob is None:
-        return False
-    return blob.exists()
+    return blob.size
 
-def load_alignment(bucket_name, path, arguments):
+def load_alignments(bucket_name, path, arguments):
     local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
     with open(local_cache) as json_file:
         return json.load(json_file)
 
-def load_audio(bucket_name, path, arguments):
-    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
+def load_audio(path, arguments):
+    return MP3File(path, arguments)
 
-    return AudioSegment.from_mp3(local_cache)
+class MP3File:
+    def __init__(self, path, arguments):
+        self.path = path
+        self.arguments = arguments
+        self.mp3 = None
+
+    def get(self):
+        if self.mp3 is None:
+            local_cache = LocalFileCache(self.arguments, self.path).get_path()
+
+            self.mp3 = AudioSegment.from_mp3(local_cache)
+
+        return self.mp3
 
 def delete_audio(bucket_name, path, arguments):
+    del mp3
+    gc.collect()
     local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
-    os.remove(local_cache)
+    if os.path.exists(local_cache):
+        os.remove(local_cache)
 
 def extract_audio(audio, start, end):
-    return audio[start:end]
+    return audio.get()[start:end]
 
 def save_training_sample(file_uploader, csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count):
     path = get_output_path(arguments, total_count)
-    local_path = get_local_path(arguments, total_count)
 
-    directory = os.path.dirname(local_path)
+    if not blob_exists(mp3s, path):
+        local_path = get_local_path(arguments, total_count)
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+        directory = os.path.dirname(local_path)
 
-    logger.debug("Saving sample: " + path + " at local path " + local_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
-    audio_segment.export(local_path, format="wav")
+        logger.debug("Saving sample: " + path + " at local path " + local_path)
 
-    file_uploader.upload(path, local_path)
+        audio_segment = extract_audio(audio, start, end)
+
+        audio_segment.export(local_path, format="wav")
+
+        file_uploader.upload(path, local_path)
 
     csv_writer.writerow([path, text])
     metadata_writer.writerow([path, json.dumps(entry)])
