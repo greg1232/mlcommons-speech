@@ -301,6 +301,8 @@ class LocalFileCache:
         self.config = config
         self.remote_path = remote_path
 
+        self.local_path = self.compute_local_path()
+
         if create:
             self.download_if_remote()
 
@@ -308,10 +310,7 @@ class LocalFileCache:
         return self.local_path
 
     def download_if_remote(self):
-        self.local_path = self.compute_local_path()
-
         if not self.is_remote_path(self.remote_path):
-            self.local_path = self.remote_path
             return
 
         self.download()
@@ -340,6 +339,8 @@ class LocalFileCache:
         return path.find("gs:") == 0
 
     def compute_local_path(self):
+        if not self.is_remote_path(self.remote_path):
+            return self.remote_path
         bucket, key = get_bucket_and_prefix(self.remote_path)
         return os.path.join(self.config["system"]["cache-directory"], key)
 
