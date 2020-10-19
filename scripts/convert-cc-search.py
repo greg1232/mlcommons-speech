@@ -71,7 +71,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
             continue
 
         alignment_file_name = "gs://" + os.path.join(bucket_name, file_name)
-        alignments, mp3_path = load_alignments(alignment_file_name)
+        alignments, mp3_path = load_alignments(arguments, alignment_file_name)
 
         if not blob_exists(mp3_files, mp3_path):
             continue
