@@ -178,7 +178,7 @@ def delete_audio(bucket_name, path, arguments):
 def extract_audio(audio, start, end):
     return audio.get()[start:end]
 
-def save_training_sample(file_uploader, csv_writer, metadata_writer, audio_segment, text, entry, arguments, total_count):
+def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, start, end, text, entry, arguments, total_count):
     path = get_output_path(arguments, total_count)
 
     if not blob_exists(mp3s, path):
