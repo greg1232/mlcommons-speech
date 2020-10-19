@@ -137,7 +137,7 @@ def get_corresponding_align_file_name(path):
     return os.path.splitext(path)[0] + ".aligned"
 
 def blob_exists(paths, bucket_name, prefix):
-    path = os.path.join("gs://" + bucket_name, blob.name)
+    path = os.path.join("gs://" + bucket_name, prefix)
     return path in paths
 
 def get_blob_size(path):
