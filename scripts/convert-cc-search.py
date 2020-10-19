@@ -127,6 +127,10 @@ def get_mp3_files(audio_path):
 
     return mp3_files
 
+def get_key(path):
+    parts = split_all(path)
+    return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
+
 def is_mp3(path):
     return os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
 
