@@ -294,11 +294,10 @@ def upload_files_worker(queue):
 
         logger.debug("Uploading " + local_path + " to " + path)
 
-        bucket_name, key = get_bucket_and_prefix(path)
-        bucket = storage_client.get_bucket(bucket_name)
-        blob = bucket.blob(key)
-
         try:
+            bucket_name, key = get_bucket_and_prefix(path)
+            bucket = storage_client.get_bucket(bucket_name)
+            blob = bucket.blob(key)
             blob.upload_from_filename(local_path)
         except:
             pass
