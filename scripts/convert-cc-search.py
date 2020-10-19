@@ -320,11 +320,11 @@ class LocalFileCache:
         return self.local_path
 
     def download_if_remote(self):
+        self.local_path = self.compute_local_path()
+
         if not self.is_remote_path(self.remote_path):
             self.local_path = self.remote_path
             return
-
-        self.local_path = self.compute_local_path()
 
         self.download()
 
