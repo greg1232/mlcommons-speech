@@ -168,7 +168,7 @@ class MP3File:
 def delete_audio(mp3, bucket_name, path, arguments):
     del mp3
     gc.collect()
-    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
+    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path), create=False).get_path()
     if os.path.exists(local_cache):
         os.remove(local_cache)
 
@@ -297,11 +297,12 @@ class LocalFileCache:
     """ Supports caching.  Currently it supports read-only access to GCS.
     """
 
-    def __init__(self, config, remote_path):
+    def __init__(self, config, remote_path, create=True):
         self.config = config
         self.remote_path = remote_path
 
-        self.download_if_remote()
+        if create:
+            self.download_if_remote()
 
     def get_path(self):
         return self.local_path
