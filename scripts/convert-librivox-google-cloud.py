@@ -289,7 +289,10 @@ def upload_files_worker(queue):
         bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(key)
 
-        blob.upload_from_filename(local_path)
+        try:
+            blob.upload_from_filename(local_path)
+        except:
+            pass
 
         os.remove(local_path)
 

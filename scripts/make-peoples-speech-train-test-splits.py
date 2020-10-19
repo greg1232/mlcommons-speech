@@ -110,7 +110,7 @@ def extract_aligned_samples(samples, audio_path, alignment_path):
                 end_time = alignment["end"]
                 transcript = alignment["aligned"]
                 metadata = alignment
-                path = os.path.splitext(mp3_path)[0] + "-" + str(index) + ".mp3"
+                path = os.path.splitext(mp3_path)[0] + "-" + str(index) + ".wav"
 
                 aligned_path = make_alignment(mp3_files, mp3, path, start_time, end_time)
 
@@ -156,7 +156,7 @@ def make_alignment(mp3_files, mp3, path, start_time, end_time):
         segment = mp3.get()[start_time:end_time]
         logger.debug("Saving alignment to " + path)
         with open(path, "wb", buffering=0) as mp3_file:
-            segment.export(mp3_file, format="mp3")
+            segment.export(mp3_file, format="wav")
         del segment
 
 def is_aligned_file(path):
@@ -209,7 +209,6 @@ def get_mp3_files(audio_path):
     logger.debug(" Found " + str(len(mp3_files)) + " mp3 files")
 
     return mp3_files
-
 
 def get_bucket_and_prefix(path):
     parts = split_all(path[5:])
