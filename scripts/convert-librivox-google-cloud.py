@@ -118,7 +118,7 @@ def get_mp3_files(audio_path):
     mp3_files = {}
 
     for blob in blobs:
-        if is_mp3(blob.name):
+        if is_audio(blob.name):
             path = os.path.join("gs://" + bucket_name, blob.name)
             mp3_files[path] = get_key(blob.name)
 
