@@ -83,7 +83,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
             continue
 
         logger.debug("Loading mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB")
-        mp3 = load_audio(mp3_path)
+        mp3 = load_audio(mp3_path, arguments)
 
         logger.debug("Extracting alignments from " + str(alignment_file_name) + ", " + str(mp3_path))
 
@@ -160,19 +160,18 @@ def get_mp3_path_for_aligned_file(path):
 
     return "gs://" + os.path.join(*(parts[:2] + ["Aug_18_2020", "CAPTIONED_DATA"] + parts[-2:-1] + parts[-2:-1])) + ".mp3"
 
-def load_audio(bucket_name, path, arguments):
-    return MP3File(bucket_name, path, arguments)
+def load_audio(path, arguments):
+    return MP3File(path, arguments)
 
 class MP3File:
-    def __init__(self, bucket_name, path, arguments):
-        self.bucket_name = bucket_name
+    def __init__(self, path, arguments):
         self.path = path
         self.arguments = arguments
         self.mp3 = None
 
     def get(self):
         if self.mp3 is None:
-            local_cache = LocalFileCache(self.arguments, "gs://" + os.path.join(self.bucket_name, self.path)).get_path()
+            local_cache = LocalFileCache(self.arguments, self.path).get_path()
 
             self.mp3 = AudioSegment.from_mp3(local_cache)
 
