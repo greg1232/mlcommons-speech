@@ -27,7 +27,7 @@ def main():
         help = "The maximum number of audio samples to extract.")
     parser.add_argument("--cache-directory", default = "",
         help = "The local path to cache.")
-    parser.add_argument("-o", "--output-path", default = "",
+    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-west-europe/archive_org/v1",
         help = "The output path to save the dataset.")
     parser.add_argument("--worker-count", default = 4,
         help = "The number of worker threads.")
