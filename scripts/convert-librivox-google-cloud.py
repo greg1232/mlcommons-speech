@@ -71,9 +71,6 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
         aligned_file_name = get_corresponding_align_file_name(file_name)
 
-        if blob_exists(mp3_files, mp3_path):
-            continue
-
         mp3_size = get_blob_size(mp3_path)
 
         if mp3_size > 75e6:
