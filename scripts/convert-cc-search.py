@@ -146,10 +146,11 @@ def get_blob_size(path):
 def is_aligned_file(path):
     return path.find("aligned.json") != -1
 
-def load_alignments(path):
+def load_alignments(arguments, path):
     logger.debug("Loading " + path)
-    with open(path) as alignment_file:
-        return json.load(alignment_file), get_mp3_path_for_aligned_file(path)
+    local_cache = LocalFileCache(arguments, path).get_path()
+    with open(local_cache) as json_file:
+        return json.load(json_file), get_mp3_path_for_aligned_file(path)
 
 def get_mp3_path_for_aligned_file(path):
     # gs://the-peoples-speech-west-europe/archive_org/Aug_18_2020_aligned_data_9_15_20/CAPTIONED_DATA/output/10_10_2017_Essex_Junction_Trustees/aligned.json
