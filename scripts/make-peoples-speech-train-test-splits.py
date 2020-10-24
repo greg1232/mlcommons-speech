@@ -95,7 +95,7 @@ def is_mp3(path):
 def get_bucket_and_prefix(path):
     parts = split_all(path[5:])
 
-    return parts[0], os.p.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
+    return parts[0], os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
 
 def split_all(path):
     allparts = []
