@@ -1,4 +1,4 @@
-
+import concurrent.futures
 from google.cloud import storage
 from argparse import ArgumentParser
 import logging
@@ -15,11 +15,11 @@ from smart_open import open
 def make_splits(arguments):
     samples = []
 
+    get_voicery_samples(samples)
     get_common_voice_samples(samples)
     get_librispeech_samples(samples)
     get_librivox_samples(samples)
     get_cc_search_samples(samples)
-    get_voicery_samples(samples)
 
     train, test, development = split_samples(arguments, samples)
 
