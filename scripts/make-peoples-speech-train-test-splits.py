@@ -58,7 +58,7 @@ def get_librispeech_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500.csv")
 
 def get_librivox_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.1-1M/data.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.2-1M/data.csv")
 
 def get_voicery_samples(samples):
     mp3_files = get_mp3_files("gs://the-peoples-speech-aws-import/voicery")
