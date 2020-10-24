@@ -68,6 +68,8 @@ def get_voicery_samples(samples):
 
         samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
 
+storage_client = storage.Client()
+
 def get_mp3_files(audio_path):
     logger.debug("Getting MP3 files under " + audio_path)
 
@@ -92,6 +94,7 @@ def get_key(path):
 
 def is_mp3(path):
     return os.path
+
 def get_bucket_and_prefix(path):
     parts = split_all(path[5:])
 
