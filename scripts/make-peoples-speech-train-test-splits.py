@@ -18,8 +18,8 @@ def make_splits(arguments):
     get_common_voice_samples(samples)
     get_librispeech_samples(samples)
     get_librivox_samples(samples)
-    #get_voicery_samples(samples)
     get_cc_search_samples(samples)
+    get_voicery_samples(samples)
 
     train, test, development = split_samples(arguments, samples)
 
@@ -66,18 +66,38 @@ def get_voicery_samples(samples):
 
     new_samples = []
 
-    for path, name in mp3_files.items():
-        transcript = get_voicery_transcript(path)
+    # We can use a with statement to ensure threads are cleaned up promptly
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        # Start the load operations and mark each future with its URL
+        future_to_transcript = {executor.submit(get_voicery_transcript, path): (path, name) for path, name in mp3_files}
+        for future in concurrent.futures.as_completed(future_to_transcript):
+            path, name = future_to_transcript[future]
+            try:
+                transcript = future.result()
+            except Exception as exc:
+                print('%r generated an exception: %s' % (path, exc))
+            else:
+                logger.debug("transcript is " + transcript)
 
-        new_samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
+            new_samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
 
-        if len(new_samples) % 1000 == 0:
-            logger.debug(" loaded " + str(len(new_samples)) + " transcripts")
-
+            if len(new_samples) % 1000 == 0:
+                logger.debug(" loaded " + str(len(new_samples)) + " transcripts")
 
     samples.extend(new_samples)
 
 storage_client = storage.Client()
+
+def get_voicery_transcript(path):
+    base = os.path.splitext(path)[0]
+
+    normalized_path = base + ".normalized.txt"
+
+    bucket_name, prefix = get_bucket_and_prefix(normalized_path)
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.get_blob(prefix)
+
+    return blob.download_as_text().strip()
 
 def get_mp3_files(audio_path):
     logger.debug("Getting MP3 files under " + audio_path)
@@ -128,14 +148,6 @@ def get_key(path):
     parts = split_all(path)
     return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
 
-def get_voicery_transcript(path):
-    base = os.path.splitext(path)[0]
-
-    normalized_path = base + ".normalized.txt"
-
-    with open(normalized_path) as normalized_transcript_file:
-        return normalized_transcript_file.read().strip()
-
 def get_cc_search_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v1/data.csv")
 
@@ -168,7 +180,7 @@ def get_id_for_sample(id_map, sample):
 def stable_shuffle(id_map):
     id_list = [(key, value) for key, value in id_map.items()]
 
-    generator = random.Random(seed=42)
+    generator = random.Random(42)
 
     generator.shuffle(id_list)
 
