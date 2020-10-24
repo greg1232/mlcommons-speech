@@ -68,6 +68,42 @@ def get_voicery_samples(samples):
 
         samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
 
+def get_mp3_files(audio_path):
+    logger.debug("Getting MP3 files under " + audio_path)
+
+    # Note: Client.list_blobs requires at least package version 1.17.0.
+    bucket_name, prefix = get_bucket_and_prefix(audio_path)
+    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
+
+    mp3_files = {}
+
+    for blob in blobs:
+        if is_mp3(blob.name):
+            path = os.path.join("gs://" + bucket_name, blob.name)
+            mp3_files[path] = get_key(blob.name)
+
+    logger.debug(" Found " + str(len(mp3_files)) + " mp3 files")
+
+    return mp3_files
+
+def get_key(path):
+    parts = split_all(path)
+    return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
+
+def is_mp3(path):
+    return os.path
+def get_bucket_and_prefix(path):
+    parts = split_all(path[5:])
+
+    return parts[0], os.p.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
+
+def get_key(path):
+    parts = split_all(path)
+    return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
+
+def is_mp3(path):
+    return os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
+
 def get_voicery_transcript(path):
     base = os.path.split_ext(path)[0]
 
