@@ -223,6 +223,8 @@ def main():
         help = "The output path to save the test dataset.")
     parser.add_argument("--development-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.5/development.csv",
         help = "The output path to save the development dataset.")
+    parser.add_argument("--test-set-size", default = 3000,
+        help = "The number of samples to include in the test set.")
     parser.add_argument("-v", "--verbose", default = False, action="store_true",
         help = "Set the log level to debug, printing out detailed messages during execution.")
 
