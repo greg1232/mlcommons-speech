@@ -64,10 +64,18 @@ def get_librivox_samples(samples):
 def get_voicery_samples(samples):
     mp3_files = get_mp3_files("gs://the-peoples-speech-aws-import/voicery")
 
+    new_samples = []
+
     for path, name in mp3_files.items():
         transcript = get_voicery_transcript(path)
 
-        samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
+        new_samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
+
+        if len(new_samples) % 1000:
+            logger.debug(" loaded " + str(len(new_samples)) + " transcripts")
+
+
+    samples.extend(new_samples)
 
 storage_client = storage.Client()
 
@@ -119,9 +127,6 @@ def split_all(path):
 def get_key(path):
     parts = split_all(path)
     return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
-
-def is_mp3(path):
-    return os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
 
 def get_voicery_transcript(path):
     base = os.path.splitext(path)[0]
