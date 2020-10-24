@@ -93,12 +93,12 @@ def get_key(path):
     return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
 
 def is_mp3(path):
-    return os.path
+    return os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
 
 def get_bucket_and_prefix(path):
     parts = split_all(path[5:])
 
-    return parts[0], os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
+    return parts[0], os.path.join(*parts[1:])
 
 def split_all(path):
     allparts = []
