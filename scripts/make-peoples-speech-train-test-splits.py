@@ -76,8 +76,8 @@ def get_voicery_samples(samples):
                 transcript = future.result()
             except Exception as exc:
                 print('%r generated an exception: %s' % (path, exc))
-            else:
-                logger.debug("transcript is " + transcript)
+            #else:
+            #    logger.debug("transcript is " + transcript)
 
             new_samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
 
