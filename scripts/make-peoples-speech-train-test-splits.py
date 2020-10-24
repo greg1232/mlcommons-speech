@@ -18,7 +18,7 @@ def make_splits(arguments):
     get_common_voice_samples(samples)
     get_librispeech_samples(samples)
     get_librivox_samples(samples)
-    get_voicery_samples(samples)
+    #get_voicery_samples(samples)
     get_cc_search_samples(samples)
 
     train, test, development = split_samples(arguments, samples)
@@ -71,7 +71,7 @@ def get_voicery_samples(samples):
 
         new_samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
 
-        if len(new_samples) % 1000:
+        if len(new_samples) % 1000 == 0:
             logger.debug(" loaded " + str(len(new_samples)) + " transcripts")
 
 
