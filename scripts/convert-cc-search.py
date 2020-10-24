@@ -13,7 +13,7 @@ from pydub import AudioSegment
 
 logger = logging.getLogger(__name__)
 
-from smart_open import open as smartopen
+from smart_open import open
 
 storage_client = storage.Client()
 
@@ -55,8 +55,8 @@ def convert_cc_search_to_csv(arguments):
         logger.debug("Making directory: " + directory)
         os.makedirs(directory)
 
-    with smartopen(os.path.join(arguments["output_path"], "data.csv"), "w", newline="") as output_csv_file, \
-        smartopen(os.path.join(arguments["output_path"], "metadata.csv"), "w", newline="") as metadata_csv_file:
+    with open(os.path.join(arguments["output_path"], "data.csv"), "w", newline="") as output_csv_file, \
+        open(os.path.join(arguments["output_path"], "metadata.csv"), "w", newline="") as metadata_csv_file:
         csv_writer = csv.writer(output_csv_file, delimiter=',', quotechar='"')
         metadata_writer = csv.writer(metadata_csv_file, delimiter=',', quotechar='"')
         update_csv(arguments, csv_writer, metadata_writer)
@@ -189,7 +189,7 @@ def delete_audio(mp3, bucket_name, path, arguments):
 def extract_audio(audio, start, end):
     return audio.get()[start:end]
 
-def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, start, end, text, entry, arguments, total_count):
+def save_training_samplesave_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, start, end, text, entry, arguments, total_count):
     path = get_output_path(arguments, total_count)
 
     if not blob_exists(mp3s, path):
