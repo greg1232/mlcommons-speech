@@ -139,9 +139,12 @@ def blob_exists(paths, path):
 
 def get_blob_size(path):
     bucket_name, prefix = get_bucket_and_prefix(path)
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.get_blob(prefix)
-    return blob.size
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.get_blob(prefix)
+        return blob.size
+    except:
+        return 1e9
 
 def load_alignments(bucket_name, path, arguments):
     local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path)).get_path()
