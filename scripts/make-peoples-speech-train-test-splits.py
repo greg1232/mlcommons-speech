@@ -126,7 +126,7 @@ def is_mp3(path):
 def get_voicery_transcript(path):
     base = os.path.splitext(path)[0]
 
-    normalized_path = base + ".aligned.txt"
+    normalized_path = base + ".normalized.txt"
 
     with open(normalized_path) as normalized_transcript_file:
         return normalized_transcript_file.read().strip()
