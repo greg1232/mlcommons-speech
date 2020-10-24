@@ -69,7 +69,7 @@ def get_voicery_samples(samples):
     # We can use a with statement to ensure threads are cleaned up promptly
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         # Start the load operations and mark each future with its URL
-        future_to_transcript = {executor.submit(get_voicery_transcript, path): (path, name) for path, name in mp3_files}
+        future_to_transcript = {executor.submit(get_voicery_transcript, path): (path, name) for path, name in mp3_files.items()}
         for future in concurrent.futures.as_completed(future_to_transcript):
             path, name = future_to_transcript[future]
             try:
