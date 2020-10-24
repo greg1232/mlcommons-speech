@@ -124,7 +124,7 @@ def is_mp3(path):
     return os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
 
 def get_voicery_transcript(path):
-    base = os.path.split_ext(path)[0]
+    base = os.path.splitext(path)[0]
 
     normalized_path = base + ".aligned.txt"
 
