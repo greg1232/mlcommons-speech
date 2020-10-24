@@ -13,6 +13,8 @@ from pydub import AudioSegment
 
 logger = logging.getLogger(__name__)
 
+from smart_open import open as smartopen
+
 storage_client = storage.Client()
 
 def main():
@@ -53,8 +55,8 @@ def convert_cc_search_to_csv(arguments):
         logger.debug("Making directory: " + directory)
         os.makedirs(directory)
 
-    with open(os.path.join(arguments["output_path"], "data.csv"), "w", newline="") as output_csv_file, \
-        open(os.path.join(arguments["output_path"], "metadata.csv"), "w", newline="") as metadata_csv_file:
+    with smartopen(os.path.join(arguments["output_path"], "data.csv"), "w", newline="") as output_csv_file, \
+        smartopen(os.path.join(arguments["output_path"], "metadata.csv"), "w", newline="") as metadata_csv_file:
         csv_writer = csv.writer(output_csv_file, delimiter=',', quotechar='"')
         metadata_writer = csv.writer(metadata_csv_file, delimiter=',', quotechar='"')
         update_csv(arguments, csv_writer, metadata_writer)
