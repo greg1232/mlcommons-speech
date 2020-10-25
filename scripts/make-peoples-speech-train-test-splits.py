@@ -211,7 +211,7 @@ def save_samples(samples, path):
         writer = csv.writer(csv_file, delimiter=',', quotechar='"')
 
         for sample in samples:
-            writer.write_row([sample["path"], sample["caption"], json.dumps(sample["metadata"])])
+            writer.writerow([sample["path"], sample["caption"], json.dumps(sample["metadata"])])
 
 def main():
     parser = ArgumentParser("Creates people's speech train, test, "
