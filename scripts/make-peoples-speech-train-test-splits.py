@@ -79,7 +79,7 @@ def get_voicery_samples(samples):
             #else:
             #    logger.debug("transcript is " + transcript)
 
-            new_samples.append((path, transcript, {"speaker_id" : "voicery_" + name}))
+            new_samples.append({"path" : path, "caption" : transcript, "metadata": {"speaker_id" : "voicery_" + name}})
 
             if len(new_samples) % 1000 == 0:
                 logger.debug(" loaded " + str(len(new_samples)) + " transcripts")
