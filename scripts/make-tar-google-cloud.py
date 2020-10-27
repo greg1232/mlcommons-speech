@@ -5,6 +5,7 @@ import logging
 import csv
 import os
 import json
+import tarfile
 from smart_open import open
 
 logger = logging.getLogger(__name__)
