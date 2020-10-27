@@ -118,12 +118,11 @@ class ArchiveWriter:
                         self.archive.addfile(info, data_buffer)
                         self.csv_writer.writerow([updated_path, transcript, metadata])
 
+                        logger.debug("loaded %s bytes from %s " % (len(data), path))
                         del data_buffer
                         del data
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
-                    else:
-                        logger.debug("loaded %s bytes from %s " % (len(data), path))
 
 
         self.csv_file.close()
