@@ -106,7 +106,7 @@ class ArchiveWriter:
                 updated_path, path, transcript, metadata = future_to_data[future]
                 try:
                     data = future.result()
-                    self.archive.addfile(updated_path, data)
+                    self.archive.addfile(tarfile.TarInfo(name=updated_path), data)
                     self.csv_writer.writerow([updated_path, transcript, metadata])
                 except Exception as exc:
                     print('%r generated an exception: %s' % (path, exc))
