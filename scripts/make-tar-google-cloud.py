@@ -31,11 +31,9 @@ def main():
 def make_tar_gz(arguments):
     samples = load_csv(arguments["input_path"])
 
-    archive = open_archive(arguments["output_path"])
-
     updated_samples = [ (update_path(sample["path"]), sample["path"], sample["caption"], sample["metadata"]) for sample in samples]
 
-    writer = ArchiveWriter(archive, updated_samples)
+    writer = ArchiveWriter(arguments["output_path"], updated_samples)
 
     writer.run()
 
@@ -85,6 +83,7 @@ def load_csv(csv_path):
 
 
 def open_archive(path):
+    logger.debug("Opening archive for writing, " + path)
     tar_file = open(path, mode="wb")
     return tarfile.TarFile(fileobj=tar_file, mode="w"), tar_file
 
