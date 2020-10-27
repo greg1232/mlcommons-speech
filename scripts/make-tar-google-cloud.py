@@ -90,7 +90,7 @@ def open_archive(path):
 
 class ArchiveWriter:
     def __init__(self, archive_path, samples):
-        self.archive, self.archive_file = load_archive(archive_path)
+        self.archive, self.archive_file = open_archive(archive_path)
         self.samples = samples
 
         self.csv_file_name = "data.csv"
