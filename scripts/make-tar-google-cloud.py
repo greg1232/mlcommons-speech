@@ -58,7 +58,7 @@ def load_csv(csv_path):
 
 def open_archive(path):
     tar_file = open(path, mode="wb")
-    return tarfile.TarFile(fileobj=tar_file), tar_file
+    return tarfile.TarFile(fileobj=tar_file, mode="w"), tar_file
 
 class ArchiveWriter:
     def __init__(self, archive_path, samples):
