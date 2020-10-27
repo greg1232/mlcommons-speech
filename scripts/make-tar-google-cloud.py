@@ -86,7 +86,7 @@ def load_csv(csv_path):
 
 def open_archive(path):
     logger.debug("Opening archive for writing, " + path)
-    tar_file = open(path, mode="wb")
+    tar_file = open(path, mode="wb", transport_params={"min_part_size" : (2**18 * 16)})
     return tarfile.TarFile(fileobj=tar_file, mode="w"), tar_file
 
 class ArchiveWriter:
