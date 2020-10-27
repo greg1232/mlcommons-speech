@@ -33,7 +33,7 @@ def make_tar_gz(arguments):
 
     archive = open_archive(arguments["output_path"])
 
-    updated_samples = [ (update_path(sample["path"]), sample["path"], sample["transcript"], sample["metadata"]) for sample in samples]
+    updated_samples = [ (update_path(sample["path"]), sample["path"], sample["caption"], sample["metadata"]) for sample in samples]
 
     writer = ArchiveWriter(archive, updated_samples)
 
