@@ -7,6 +7,7 @@ import csv
 import os
 import json
 import tarfile
+import io
 from smart_open import open
 
 logger = logging.getLogger(__name__)
@@ -105,13 +106,13 @@ class ArchiveWriter:
                 updated_path, path, transcript, metadata = future_to_data[future]
                 try:
                     data = future.result()
+                    self.archive.addfile(updated_path, data)
+                    self.csv_writer.writerow([updated_path, transcript, metadata])
                 except Exception as exc:
                     print('%r generated an exception: %s' % (path, exc))
                 else:
                     logger.debug("loaded %s bytes from %s " % (len(data), path))
 
-                self.archive.addfile(updated_path, data)
-                self.csv_writer.writerow([updated_path, transcript, metadata])
 
         self.csv_file.close()
 
