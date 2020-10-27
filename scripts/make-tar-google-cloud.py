@@ -121,7 +121,7 @@ class ArchiveWriter:
 
 
 def load_file(path):
-    bucket_name, prefix = get_bucket_and_prefix(normalized_path)
+    bucket_name, prefix = get_bucket_and_prefix(path)
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.get_blob(prefix)
 
