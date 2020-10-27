@@ -106,7 +106,7 @@ class ArchiveWriter:
                 updated_path, path, transcript, metadata = future_to_data[future]
                 try:
                     data = future.result()
-                    self.archive.addfile(tarfile.TarInfo(name=updated_path), data)
+                    self.archive.addfile(tarfile.TarInfo(name=updated_path), io.BytesIO(data))
                     self.csv_writer.writerow([updated_path, transcript, metadata])
                 except Exception as exc:
                     print('%r generated an exception: %s' % (path, exc))
@@ -128,7 +128,7 @@ def load_file(path):
 
     data = blob.download_as_bytes()
 
-    return io.BytesIO(data)
+    return data
 
 
 def setup_logger(arguments):
