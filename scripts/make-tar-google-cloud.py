@@ -40,7 +40,7 @@ def make_tar_gz(arguments):
     writer.run()
 
 def update_path(path):
-    bucket_name, prefix = get_bucket_and_prefix(normalized_path)
+    bucket_name, prefix = get_bucket_and_prefix(path)
     return prefix
 
 def get_bucket_and_prefix(path):
