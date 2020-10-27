@@ -94,7 +94,7 @@ class ArchiveWriter:
 
         self.csv_file_name = "data.csv"
         self.csv_file = open(self.csv_file_name, newline="", mode="w")
-        self.csv_writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+        self.csv_writer = csv.writer(self.csv_file, delimiter=',', quotechar='"')
 
     def run(self):
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
