@@ -35,7 +35,7 @@ def make_tar_gz(arguments):
 
     writer.run()
 
-def load_csv_samples(csv_path):
+def load_csv(csv_path):
     new_samples = []
     with open(csv_path) as csv_file:
         reader = csv.reader(csv_file, delimiter=',', quotechar='"')
