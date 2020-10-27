@@ -33,11 +33,29 @@ def main():
 def make_tar_gz(arguments):
     samples = load_csv(arguments["input_path"])
 
-    updated_samples = [ (update_path(sample["path"]), sample["path"], sample["caption"], sample["metadata"]) for sample in samples]
+    updated_samples = update_samples(samples)
 
     writer = ArchiveWriter(arguments["output_path"], updated_samples)
 
     writer.run()
+
+def load_csv(csv_path):
+    new_samples = []
+    with open(csv_path) as csv_file:
+        reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+
+        for row in reader:
+            path, caption = row[0], row[1]
+
+            metadata = {}
+            if len(row) >= 3:
+                metadata = json.loads(row[2])
+
+            yield {"path" : path, "caption" : caption, "metadata" : metadata}
+
+def update_samples(samples):
+    for sample in samples:
+        yield (update_path(sample["path"]), sample["path"], sample["caption"], sample["metadata"])
 
 def update_path(path):
     bucket_name, prefix = get_bucket_and_prefix(path)
@@ -65,25 +83,6 @@ def split_all(path):
             allparts.insert(0, parts[1])
     return allparts
 
-def load_csv(csv_path):
-    new_samples = []
-    with open(csv_path) as csv_file:
-        reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-
-        for row in reader:
-            path, caption = row[0], row[1]
-
-            metadata = {}
-            if len(row) >= 3:
-                metadata = json.loads(row[2])
-
-            new_samples.append({"path" : path, "caption" : caption, "metadata" : metadata})
-
-    logger.info("Loaded " + str(len(new_samples)) + " from " + csv_path)
-
-    return new_samples
-
-
 def open_archive(path):
     logger.debug("Opening archive for writing, " + path)
     tar_file = open(path, mode="wb", transport_params={"min_part_size" : (2**18 * 16)})
@@ -100,20 +99,31 @@ class ArchiveWriter:
 
     def run(self):
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            # Start the load operations and mark each future with its URL
-            future_to_data = {executor.submit(load_file, path): (updated_path, path, transcript, metadata) for updated_path, path, transcript, metadata in self.samples}
-            for future in concurrent.futures.as_completed(future_to_data):
-                updated_path, path, transcript, metadata = future_to_data[future]
-                try:
-                    data = future.result()
-                    info = tarfile.TarInfo(name=updated_path)
-                    info.size = len(data)
-                    self.archive.addfile(info, io.BytesIO(data))
-                    self.csv_writer.writerow([updated_path, transcript, metadata])
-                except Exception as exc:
-                    print('%r generated an exception: %s' % (path, exc))
-                else:
-                    logger.debug("loaded %s bytes from %s " % (len(data), path))
+
+            while True:
+                sample_batch = self.get_next_batch()
+
+                if len(sample_batch) == 0:
+                    break
+
+                # Start the load operations and mark each future with its URL
+                future_to_data = {executor.submit(load_file, path): (updated_path, path, transcript, metadata) for updated_path, path, transcript, metadata in sample_batch}
+                for future in concurrent.futures.as_completed(future_to_data):
+                    updated_path, path, transcript, metadata = future_to_data[future]
+                    try:
+                        data = future.result()
+                        info = tarfile.TarInfo(name=updated_path)
+                        info.size = len(data)
+                        data_buffer = io.BytesIO(data)
+                        self.archive.addfile(info, data_buffer)
+                        self.csv_writer.writerow([updated_path, transcript, metadata])
+
+                        del data_buffer
+                        del data
+                    except Exception as exc:
+                        print('%r generated an exception: %s' % (path, exc))
+                    else:
+                        logger.debug("loaded %s bytes from %s " % (len(data), path))
 
 
         self.csv_file.close()
@@ -121,6 +131,16 @@ class ArchiveWriter:
         self.archive.add(self.csv_file_name)
         self.archive.close()
         self.archive_file.close()
+
+    def get_next_batch(self):
+        batch = []
+        for i in range(1024):
+            try:
+                batch.append(next(self.samples))
+            except StopIteration:
+                break
+
+        return batch
 
 
 def load_file(path):
