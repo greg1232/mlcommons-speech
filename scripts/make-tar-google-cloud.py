@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 import logging
 import csv
 import os
+import json
 from smart_open import open
 
 logger = logging.getLogger(__name__)
@@ -63,7 +64,7 @@ class ArchiveWriter:
         self.archive, self.archive_file = load_archive(archive_path)
         self.samples = samples
 
-        self.csv_file_name = "temp.csv"
+        self.csv_file_name = "data.csv"
         self.csv_file = open(self.csv_file_name, newline="", mode="w")
         self.csv_writer = csv.writer(csvfile, delimiter=',', quotechar='"')
 
@@ -85,7 +86,7 @@ class ArchiveWriter:
 
         self.csv_file.close()
 
-        self.archive.addfile("data.csv", self.csv_file_name)
+        self.archive.add(self.csv_file_name)
         self.archive.close()
         self.archive_file.close()
 
@@ -98,7 +99,6 @@ def load_file(path):
     data = blob.download_as_bytes()
 
     return io.BytesIO(data)
-
 
 
 def setup_logger(arguments):
