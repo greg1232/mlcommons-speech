@@ -46,6 +46,8 @@ def update_path(path):
 def get_bucket_and_prefix(path):
     parts = split_all(path[5:])
 
+    assert len(parts) > 1, str(parts)
+
     return parts[0], os.path.join(*parts[1:])
 
 def split_all(path):
