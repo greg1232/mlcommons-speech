@@ -10,6 +10,8 @@ from smart_open import open
 
 logger = logging.getLogger(__name__)
 
+storage_client = storage.Client()
+
 def main():
     parser = ArgumentParser("Takes all of the files in a dataset and uploads into a TAR.GZ archive .")
 
@@ -36,6 +38,30 @@ def make_tar_gz(arguments):
     writer = ArchiveWriter(archive, updated_samples)
 
     writer.run()
+
+def update_path(path):
+    bucket_name, prefix = get_bucket_and_prefix(normalized_path)
+    return prefix
+
+def get_bucket_and_prefix(path):
+    parts = split_all(path[5:])
+
+    return parts[0], os.path.join(*parts[1:])
+
+def split_all(path):
+    allparts = []
+    while True:
+        parts = os.path.split(path)
+        if parts[0] == path:  # sentinel for absolute paths
+            allparts.insert(0, parts[0])
+            break
+        elif parts[1] == path: # sentinel for relative paths
+            allparts.insert(0, parts[1])
+            break
+        else:
+            path = parts[0]
+            allparts.insert(0, parts[1])
+    return allparts
 
 def load_csv(csv_path):
     new_samples = []
