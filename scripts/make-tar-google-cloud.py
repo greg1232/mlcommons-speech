@@ -13,7 +13,7 @@ def main():
 
     parser.add_argument("-i", "--input-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.5/train.csv",
         help = "The output path to load the dataset from.")
-    parser.add_argument("--output-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.5/train.tar.gz",
+    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.5/train.tar.gz",
         help = "The output path to save the test dataset.")
     parser.add_argument("-v", "--verbose", default = False, action="store_true",
         help = "Set the log level to debug, printing out detailed messages during execution.")
@@ -34,6 +34,25 @@ def make_tar_gz(arguments):
     writer = ArchiveWriter(archive, updated_samples)
 
     writer.run()
+
+def load_csv_samples(csv_path):
+    new_samples = []
+    with open(csv_path) as csv_file:
+        reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+
+        for row in reader:
+            path, caption = row[0], row[1]
+
+            metadata = {}
+            if len(row) >= 3:
+                metadata = json.loads(row[2])
+
+            new_samples.append({"path" : path, "caption" : caption, "metadata" : metadata})
+
+    logger.info("Loaded " + str(len(new_samples)) + " from " + csv_path)
+
+    return new_samples
+
 
 def open_archive(path):
     tar_file = open(path, mode="wb")
