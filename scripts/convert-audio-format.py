@@ -7,6 +7,7 @@ import queue
 import threading
 import gc
 from google.cloud import storage
+from smart_open import open
 
 from pydub import AudioSegment
 
