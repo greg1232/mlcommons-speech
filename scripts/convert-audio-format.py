@@ -25,10 +25,12 @@ def main():
         help = "The local path to cache.")
     parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-aws-import/common-voice/train-flac.csv",
         help = "The output path to save the dataset.")
-    parser.add_argument("--worker-count", default = 4,
+    parser.add_argument("--worker-count", default = 8,
         help = "The number of worker threads.")
     parser.add_argument("-f", "--format", default = "flac",
         help = "The audio format to convert to.")
+    parser.add_argument("-b", "--batch-size", default = 256,
+        help = "The number of audio files to process at one time.")
     parser.add_argument("-v", "--verbose", default = False,
         action="store_true",
         help = "Set the log level to debug, "
@@ -60,14 +62,16 @@ class AudioConverter:
         self.csv_writer = csv_writer
 
     def run(self):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=int(self.arguments["worker_count"])) as executor:
             while True:
                 sample_batch = self.get_next_batch()
 
                 if len(sample_batch) == 0:
                     break
 
-                future_to_data = {executor.submit(convert_file, path, updated_path): (updated_path, path, transcript, metadata) for updated_path, path, transcript, metadata in sample_batch}
+                future_to_data = {executor.submit(convert_file, self.arguments, path, updated_path): (updated_path, path, transcript, metadata) for
+                    updated_path, path, transcript, metadata in sample_batch}
+
                 for future in concurrent.futures.as_completed(future_to_data):
                     updated_path, path, metadata = future_to_data[future]
                     try:
@@ -81,11 +85,11 @@ class AudioConverter:
     def get_next_batch(self):
         batch = []
 
-        for i in range(int(arguments["batch_size"])):
+        for i in range(int(self.arguments["batch_size"])):
             try:
                 path, transcript, metadata = next(self.csv_reader)
 
-                updated_path = update_path(path)
+                updated_path = update_path(path, self.arguments["format"])
 
                 batch.append((updated_path, path, transcript, metadata))
             except StopIteration:
@@ -94,9 +98,9 @@ class AudioConverter:
 
         return batch
 
-def convert_file(path, updated_path):
-    local_path = LocalFileCache(path).path()
-    updated_local_path = update_path(local_path)
+def convert_file(config, path, updated_path):
+    local_path = LocalFileCache(config, path).path()
+    updated_local_path = update_path(local_path, get_format(updated_path))
 
     logger.debug("Converting from " + local_path + " to " + updated_local_path)
 
@@ -117,10 +121,10 @@ def get_format(path):
 
     return ext[1:]
 
-def update_path(path):
+def update_path(path, format_name):
     pre, ext = os.path.splitext(path)
 
-    return pre + ".flac"
+    return pre + "." + format_name
 
 def get_bucket_and_prefix(path):
     parts = split_all(path[5:])
@@ -161,46 +165,6 @@ def setup_logger(arguments):
 
     # add ch to logger
     logger.addHandler(ch)
-
-class FileUploader:
-    def __init__(self, arguments):
-        self.queue = queue.Queue(maxsize=512)
-        self.threads = []
-
-        for i in range(int(arguments["worker_count"])):
-            thread = threading.Thread(target=upload_files_worker, args=(self.queue,))
-            thread.start()
-            self.threads.append(thread)
-
-    def upload(self, path, local_path):
-        self.queue.put((path, local_path, False))
-
-    def join(self):
-
-        for thread in self.threads:
-            self.queue.put((None, None, True))
-
-        for thread in self.threads:
-            thread.join()
-
-def upload_files_worker(queue):
-    while True:
-        path, local_path, is_finished = queue.get()
-
-        if is_finished:
-            break
-
-        logger.debug("Uploading " + local_path + " to " + path)
-
-        try:
-            bucket_name, key = get_bucket_and_prefix(path)
-            bucket = storage_client.get_bucket(bucket_name)
-            blob = bucket.blob(key)
-            blob.upload_from_filename(local_path)
-        except:
-            pass
-
-        os.remove(local_path)
 
 class LocalFileCache:
     """ Supports caching.  Currently it supports read-only access to GCS.
