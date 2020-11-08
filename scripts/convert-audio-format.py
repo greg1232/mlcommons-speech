@@ -72,12 +72,12 @@ class AudioConverter:
                     updated_path, path, transcript, metadata in sample_batch}
 
                 for future in concurrent.futures.as_completed(future_to_data):
-                    updated_path, path, metadata = future_to_data[future]
+                    updated_path, path, transcript, metadata = future_to_data[future]
                     try:
-                        byte_count = future.result()
+                        byte_count, ratio = future.result()
                         self.csv_writer.writerow([updated_path, transcript, metadata])
 
-                        logger.debug("converted %s bytes from %s " % (byte_count, path))
+                        logger.debug("converted %s (%sx) bytes from %s " % (byte_count, ratio, path))
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
 
@@ -118,9 +118,13 @@ def convert_file(config, path, updated_path):
     blob = bucket.blob(key)
     blob.upload_from_filename(local_path)
 
+    original_size = os.path.getsize(local_path)
+    updated_size = os.path.getsize(updated_local_path)
+
     os.remove(local_path)
     os.remove(updated_local_path)
 
+    return updated_size, updated_size / original_size
 
 def get_format(path):
     pre, ext = os.path.splitext(path)
