@@ -61,6 +61,7 @@ class AudioConverter:
         self.csv_writer = csv_writer
 
     def run(self):
+        total_bytes = 0
         with concurrent.futures.ThreadPoolExecutor(max_workers=int(self.arguments["worker_count"])) as executor:
             while True:
                 sample_batch = self.get_next_batch()
@@ -75,9 +76,10 @@ class AudioConverter:
                     updated_path, path, transcript, metadata = future_to_data[future]
                     try:
                         byte_count, ratio = future.result()
+                        total_bytes += byte_count
                         self.csv_writer.writerow([updated_path, transcript, metadata])
 
-                        logger.debug("converted %s (%sx) bytes from %s " % (byte_count, ratio, path))
+                        logger.debug("converted %s (%sx) / %s bytes from %s " % (sizeof_fmt(byte_count), ratio, sizeof_fmt(total_bytes), path))
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
 
@@ -104,13 +106,20 @@ class AudioConverter:
 
         return batch
 
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
+
 def convert_file(config, path, updated_path):
     local_path = LocalFileCache(config, path).get_path()
     updated_local_path = update_path(local_path, get_format(updated_path))
 
     logger.debug("Converting from " + local_path + " to " + updated_local_path)
 
-    AudioSegment.from_mp3(local_path).export(updated_local_path, format=get_format(updated_path))
+    AudioSegment.from_mp3(local_path).export(updated_local_path, format=get_format(updated_path), parameters=["-compression_level", 4])
 
     # upload the file
     bucket_name, key = get_bucket_and_prefix(path)
