@@ -44,7 +44,7 @@ def main():
 
 
 def convert_audio_format(arguments):
-    with open(arguments["output_path"], "w", newline="") as output_csv_file,
+    with open(arguments["output_path"], "w", newline="") as output_csv_file, \
          open(arguments["input_path"]) as input_csv_file:
         csv_reader = csv.reader(input_csv_file, delimiter=',', quotechar='"')
         csv_writer = csv.writer(output_csv_file, delimiter=',', quotechar='"')
