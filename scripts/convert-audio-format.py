@@ -86,7 +86,14 @@ class AudioConverter:
 
         for i in range(int(self.arguments["batch_size"])):
             try:
-                path, transcript, metadata = next(self.csv_reader)
+                row = next(self.csv_reader)
+
+                path = row[0]
+                transcript = row[1]
+                metadata = ""
+
+                if len(row) > 2:
+                    metadata = row[2]
 
                 updated_path = update_path(path, self.arguments["format"])
 
