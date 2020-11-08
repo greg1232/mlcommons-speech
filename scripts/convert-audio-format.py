@@ -105,7 +105,7 @@ class AudioConverter:
         return batch
 
 def convert_file(config, path, updated_path):
-    local_path = LocalFileCache(config, path).path()
+    local_path = LocalFileCache(config, path).get_path()
     updated_local_path = update_path(local_path, get_format(updated_path))
 
     logger.debug("Converting from " + local_path + " to " + updated_local_path)
