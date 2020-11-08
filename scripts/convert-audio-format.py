@@ -98,6 +98,8 @@ def convert_file(path, updated_path):
     local_path = LocalFileCache(path).path()
     updated_local_path = update_path(local_path)
 
+    logger.debug("Converting from " + local_path + " to " + updated_local_path)
+
     AudioSegment.from_mp3(local_path).export(updated_local_path, format=get_format(updated_path))
 
     # upload the file
