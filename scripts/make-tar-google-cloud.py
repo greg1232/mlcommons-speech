@@ -121,6 +121,11 @@ class ArchiveWriter:
                         logger.debug("loaded %s bytes from %s " % (len(data), path))
                         del data_buffer
                         del data
+                        del info
+                        del updated_path
+                        del path
+                        del trascript
+                        del metadata
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
 
