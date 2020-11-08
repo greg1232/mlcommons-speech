@@ -120,7 +120,7 @@ def convert_file(config, path, updated_path):
 
     logger.debug("Converting from " + local_path + " to " + updated_local_path)
 
-    AudioSegment.from_mp3(local_path).export(updated_local_path, format=get_format(updated_path), parameters=["-compression_level", 4])
+    AudioSegment.from_mp3(local_path).export(updated_local_path, format=get_format(updated_path), parameters=["-compression_level", "4"])
 
     # upload the file
     bucket_name, key = get_bucket_and_prefix(path)
