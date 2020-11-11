@@ -59,7 +59,7 @@ def convert_dsalign_to_csv(arguments):
         update_csv(arguments, csv_writer, metadata_writer)
 
 def update_csv(arguments, csv_writer, metadata_writer):
-    mp3_files = dict(get_mp3_files(arguments["input_path"]), **get_mp3_files(arguments["output_path"]))
+    mp3_files = dict(get_mp3_files(arguments["input_path"], arguments), **get_mp3_files(arguments["output_path"], arguments))
 
     total_count = 0
 
