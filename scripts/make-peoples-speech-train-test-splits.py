@@ -28,8 +28,8 @@ def make_splits(arguments):
     save_samples(development, arguments["development_path"])
 
 def get_common_voice_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/train.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/train-flac.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac.csv")
 
 def load_csv_samples(samples, csv_path):
     new_samples = []
