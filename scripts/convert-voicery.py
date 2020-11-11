@@ -16,8 +16,8 @@ def main():
     parser = ArgumentParser("Creates CSV file for voicery samples.")
 
     parser.add_argument("--input-path", default = "gs://the-peoples-speech-aws-import/voicery",
-        help = "The output path to save the training dataset.")
-    parser.add_argument("--output-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.5/train.csv",
+        help = "The input path to search for data.")
+    parser.add_argument("--output-path", default = "gs://the-peoples-speech-aws-import/voicery/data.csv",
         help = "The output path to save the training dataset.")
     parser.add_argument("-v", "--verbose", default = False, action="store_true",
         help = "Set the log level to debug, printing out detailed messages during execution.")
