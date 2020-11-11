@@ -25,7 +25,7 @@ def main():
         help = "The maximum number of audio samples to extract.")
     parser.add_argument("--cache-directory", default = "data",
         help = "The local path to cache.")
-    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-aws-import/librivox-v0.2-1M",
+    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-aws-import/librivox-v0.2-1B",
         help = "The output path to save the dataset.")
     parser.add_argument("--worker-count", default = 4,
         help = "The number of worker threads.")
@@ -107,7 +107,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
     file_uploader.join()
 
-def get_mp3_files(audio_path):
+def get_mp3_files(audio_path, arguments):
     logger.debug("Getting MP3 files under " + audio_path)
 
     # Note: Client.list_blobs requires at least package version 1.17.0.
@@ -120,6 +120,8 @@ def get_mp3_files(audio_path):
         if is_audio(blob.name):
             path = os.path.join("gs://" + bucket_name, blob.name)
             mp3_files[path] = get_key(blob.name)
+            if len(mp3_files) > int(arguments["max_count"]):
+                break
 
     logger.debug(" Found " + str(len(mp3_files)) + " mp3 files")
 
@@ -202,7 +204,7 @@ def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio
     metadata_writer.writerow([path, json.dumps(entry)])
 
 def get_output_path(arguments, input_path, start, end):
-    return os.path.join(arguments["output_path"], "data", audio + hash_function(input_path + "-" + str(start) + "-" + str(end)) + ".wav")
+    return os.path.join(arguments["output_path"], "data", "audio-" + hash_function(input_path + "-" + str(start) + "-" + str(end)) + ".wav")
 
 def hash_function(data):
     return hashlib.sha256(data).hexdigest()
