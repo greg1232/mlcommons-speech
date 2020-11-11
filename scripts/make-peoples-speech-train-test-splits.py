@@ -59,7 +59,7 @@ def get_librispeech_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500.csv")
 
 def get_librivox_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.2-1M/data.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1K/data.csv")
 
 def get_voicery_samples(samples):
     mp3_files = get_mp3_files("gs://the-peoples-speech-aws-import/voicery")
@@ -215,7 +215,7 @@ def save_samples(samples, path):
 
 def main():
     parser = ArgumentParser("Creates people's speech train, test, "
-        "development v0.5 splits.")
+        "development splits.")
 
     parser.add_argument("--train-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.5/train.csv",
         help = "The output path to save the training dataset.")
