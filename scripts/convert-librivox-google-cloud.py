@@ -185,7 +185,7 @@ def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio
     path = get_output_path(arguments, input_path, start, end)
 
     if not blob_exists(mp3s, path):
-        local_path = get_local_path(arguments, total_count)
+        local_path = get_local_path(arguments, input_path, start, end)
 
         directory = os.path.dirname(local_path)
 
@@ -209,8 +209,8 @@ def get_output_path(arguments, input_path, start, end):
 def hash_function(data):
     return hashlib.sha256(data.encode('utf-8')).hexdigest()
 
-def get_local_path(arguments, total_count):
-    bucket, key = get_bucket_and_prefix(get_output_path(arguments, total_count))
+def get_local_path(arguments, input_path, start, end):
+    bucket, key = get_bucket_and_prefix(get_output_path(arguments, input_path, start, end))
     return os.path.join(arguments["system"]["cache-directory"], key)
 
 def get_all_object_paths(arguments):
