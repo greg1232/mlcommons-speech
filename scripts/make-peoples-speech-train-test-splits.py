@@ -59,94 +59,12 @@ def get_librispeech_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500.csv")
 
 def get_librivox_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1K/data.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data.csv")
 
 def get_voicery_samples(samples):
-    mp3_files = get_mp3_files("gs://the-peoples-speech-aws-import/voicery")
-
-    new_samples = []
-
-    # We can use a with statement to ensure threads are cleaned up promptly
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        # Start the load operations and mark each future with its URL
-        future_to_transcript = {executor.submit(get_voicery_transcript, path): (path, name) for path, name in mp3_files.items()}
-        for future in concurrent.futures.as_completed(future_to_transcript):
-            path, name = future_to_transcript[future]
-            try:
-                transcript = future.result()
-            except Exception as exc:
-                print('%r generated an exception: %s' % (path, exc))
-            #else:
-            #    logger.debug("transcript is " + transcript)
-
-            new_samples.append({"path" : path, "caption" : transcript, "metadata": {"speaker_id" : "voicery_" + name}})
-
-            if len(new_samples) % 1000 == 0:
-                logger.debug(" loaded " + str(len(new_samples)) + " transcripts")
-
-    samples.extend(new_samples)
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data.csv")
 
 storage_client = storage.Client()
-
-def get_voicery_transcript(path):
-    base = os.path.splitext(path)[0]
-
-    normalized_path = base + ".normalized.txt"
-
-    bucket_name, prefix = get_bucket_and_prefix(normalized_path)
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.get_blob(prefix)
-
-    return blob.download_as_text().strip()
-
-def get_mp3_files(audio_path):
-    logger.debug("Getting MP3 files under " + audio_path)
-
-    # Note: Client.list_blobs requires at least package version 1.17.0.
-    bucket_name, prefix = get_bucket_and_prefix(audio_path)
-    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
-
-    mp3_files = {}
-
-    for blob in blobs:
-        if is_mp3(blob.name):
-            path = os.path.join("gs://" + bucket_name, blob.name)
-            mp3_files[path] = get_key(blob.name)
-
-    logger.debug(" Found " + str(len(mp3_files)) + " mp3 files")
-
-    return mp3_files
-
-def get_key(path):
-    parts = split_all(path)
-    return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
-
-def is_mp3(path):
-    return os.path.splitext(path)[1] == ".mp3" or os.path.splitext(path)[1] == ".wav"
-
-def get_bucket_and_prefix(path):
-    parts = split_all(path[5:])
-
-    return parts[0], os.path.join(*parts[1:])
-
-def split_all(path):
-    allparts = []
-    while True:
-        parts = os.path.split(path)
-        if parts[0] == path:  # sentinel for absolute paths
-            allparts.insert(0, parts[0])
-            break
-        elif parts[1] == path: # sentinel for relative paths
-            allparts.insert(0, parts[1])
-            break
-        else:
-            path = parts[0]
-            allparts.insert(0, parts[1])
-    return allparts
-
-def get_key(path):
-    parts = split_all(path)
-    return os.path.splitext(parts[-2] + "-" + parts[-1])[0]
 
 def get_cc_search_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v1/data.csv")
