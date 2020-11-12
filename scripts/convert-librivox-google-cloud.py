@@ -8,6 +8,7 @@ import threading
 import hashlib
 import gc
 from google.cloud import storage
+from smart_open import open
 
 from pydub import AudioSegment
 
