@@ -73,7 +73,7 @@ def get_transcript(path):
     #encoding = speech.RecognitionConfig.AudioEncoding.MP3
     config = {
         "language_code": language_code,
-        "audio_channel_count": 2,
+        "enable_separate_recognition_per_channel": 2,
         #"sample_rate_hertz": sample_rate_hertz,
     #    "encoding": encoding,
     }
