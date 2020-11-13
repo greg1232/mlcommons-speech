@@ -7,16 +7,16 @@ import json
 import tarfile
 import io
 from smart_open import open
-from google.cloud import speech_v1p1beta1 as speech
+from google.cloud import speech_v1 as speech
 
 logger = logging.getLogger(__name__)
 
 def main():
     parser = ArgumentParser(".")
 
-    parser.add_argument("-i", "--input-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/train.csv",
+    parser.add_argument("-i", "--input-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/test.csv",
         help = "The output path to load the dataset from.")
-    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/train-with-transcripts.csv",
+    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/test-with-transcripts.csv",
         help = "The output path to save new transcripts.")
     parser.add_argument("-v", "--verbose", default = False, action="store_true",
         help = "Set the log level to debug, printing out detailed messages during execution.")
