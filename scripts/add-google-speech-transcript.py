@@ -27,7 +27,7 @@ def main():
 
     add_transcripts(arguments)
 
-def add_transcript(arguments):
+def add_transcripts(arguments):
     samples = load_csv(arguments["input_path"])
 
     updated_samples = update_samples(samples)
