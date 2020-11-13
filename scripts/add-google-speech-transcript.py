@@ -75,6 +75,7 @@ def get_transcript(path):
     config = {
         "language_code": language_code,
         "enable_separate_recognition_per_channel": True,
+        "audio_channel_count": 2,
         #"sample_rate_hertz": sample_rate_hertz,
     #    "encoding": encoding,
     }
