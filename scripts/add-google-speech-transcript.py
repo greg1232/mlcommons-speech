@@ -54,6 +54,7 @@ def load_csv(csv_path):
 def update_samples(samples):
     for sample in samples:
         metadata = sample["metadata"]
+        logger.debug("For " + sample["path"])
         metadata["google-speech-api-transcript"] = get_transcript(sample["path"])
         logger.debug("Transcribed '" + sample["caption"] + "' to '" + metadata["google-speech-api-transcript"] + "'")
         yield (sample["path"], sample["caption"], metadata)
