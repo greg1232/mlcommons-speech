@@ -37,7 +37,6 @@ def add_transcripts(arguments):
         for sample in updated_samples:
             csv_writer.writerow(sample)
 
-
 def load_csv(csv_path):
     new_samples = []
     with open(csv_path) as csv_file:
