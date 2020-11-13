@@ -78,7 +78,7 @@ def get_transcript(path):
     }
     audio = {"uri": path}
 
-    response = client.recognize(config=config, audio=audio)
+    response = speech_client.recognize(config=config, audio=audio)
 
     transcript = ""
 
