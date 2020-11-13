@@ -26,6 +26,8 @@ def main():
         help = "The output path to save the dataset.")
     parser.add_argument("--worker-count", default = 8,
         help = "The number of worker threads.")
+    parser.add_argument("--sampling-rate", default = 16000,
+        help = "The sampling rate for the audio.")
     parser.add_argument("-f", "--format", default = "flac",
         help = "The audio format to convert to.")
     parser.add_argument("-b", "--batch-size", default = 256,
@@ -120,7 +122,10 @@ def convert_file(config, path, updated_path):
 
     logger.debug("Converting from " + local_path + " to " + updated_local_path)
 
-    AudioSegment.from_mp3(local_path).export(updated_local_path, format=get_format(updated_path), parameters=["-compression_level", "4"])
+    audio = AudioSegment.from_mp3(local_path)
+    audio.set_frame_rate(int(config["sampling_rate"]))
+
+    audio.export(updated_local_path, format=get_format(updated_path), parameters=["-compression_level", "4", "-ac", "1"])
 
     # upload the file
     bucket_name, key = get_bucket_and_prefix(path)
