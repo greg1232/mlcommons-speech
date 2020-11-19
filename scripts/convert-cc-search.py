@@ -190,7 +190,7 @@ def extract_audio(audio, start, end):
     return audio.get()[start:end]
 
 def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, input_path, start, end, text, entry, arguments, total_count):
-    path = get_output_path(arguments, total_count)
+    path = get_output_path(arguments, input_path, start, end)
 
     if not blob_exists(mp3s, path):
         local_path = get_local_path(arguments, input_path, start, end)
