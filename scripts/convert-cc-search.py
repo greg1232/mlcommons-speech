@@ -4,6 +4,7 @@ import csv
 import json
 import os
 import queue
+import hashlib
 import threading
 import gc
 
