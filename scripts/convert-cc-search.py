@@ -29,7 +29,7 @@ def main():
         help = "The maximum number of audio samples to extract.")
     parser.add_argument("--cache-directory", default = "",
         help = "The local path to cache.")
-    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-west-europe/archive_org/v1",
+    parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-west-europe/archive_org/v0.2",
         help = "The output path to save the dataset.")
     parser.add_argument("--worker-count", default = 4,
         help = "The number of worker threads.")
@@ -80,7 +80,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
         mp3_size = get_blob_size(mp3_path)
 
-        if mp3_size > 65e6:
+        if mp3_size > 250e6:
             logger.debug("Skipping mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB which is too big")
             continue
 
@@ -95,7 +95,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
             text = entry["aligned"]
 
-            save_training_sample(mp3_files, file_uploader, csv_writer, metadata_writer, mp3, start, end, text, entry, arguments, total_count)
+            save_training_sample(mp3_files, file_uploader, csv_writer, metadata_writer, mp3, mp3_path, start, end, text, entry, arguments, total_count)
 
             total_count += 1
 
@@ -189,11 +189,11 @@ def delete_audio(mp3, bucket_name, path, arguments):
 def extract_audio(audio, start, end):
     return audio.get()[start:end]
 
-def save_training_samplesave_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, start, end, text, entry, arguments, total_count):
+def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, input_path, start, end, text, entry, arguments, total_count):
     path = get_output_path(arguments, total_count)
 
     if not blob_exists(mp3s, path):
-        local_path = get_local_path(arguments, total_count)
+        local_path = get_local_path(arguments, input_path, start, end)
 
         directory = os.path.dirname(local_path)
 
@@ -211,8 +211,11 @@ def save_training_samplesave_training_sample(mp3s, file_uploader, csv_writer, me
     csv_writer.writerow([path, text])
     metadata_writer.writerow([path, json.dumps(entry)])
 
-def get_output_path(arguments, total_count):
-    return os.path.join(arguments["output_path"], "data", str(total_count) + ".wav")
+def get_output_path(arguments, input_path, start, end):
+    return os.path.join(arguments["output_path"], "data", "audio-" + hash_function(input_path + "-" + str(start) + "-" + str(end)) + ".wav")
+
+def hash_function(data):
+    return hashlib.sha256(data.encode('utf-8')).hexdigest()
 
 def get_local_path(arguments, total_count):
     bucket, key = get_bucket_and_prefix(get_output_path(arguments, total_count))
