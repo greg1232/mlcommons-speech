@@ -120,7 +120,7 @@ def convert_file(config, path, updated_path):
     local_path = LocalFileCache(config, path).get_path()
     updated_local_path = update_path(local_path, get_format(updated_path))
 
-    logger.debug("Converting from " + local_path + " to " + updated_local_path + "(" + updated_path + ")")
+    logger.debug("Converting from " + local_path + " to " + updated_local_path + " ( " + updated_path + " )")
 
     audio = AudioSegment.from_mp3(local_path)
     audio.set_frame_rate(int(config["sampling_rate"]))

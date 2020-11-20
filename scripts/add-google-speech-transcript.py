@@ -68,16 +68,16 @@ def get_transcript(path):
     language_code = "en-US"
 
     # Sample rate in Hertz of the audio data sent
-    sample_rate_hertz = 44100
+    sample_rate_hertz = 16000
 
     # Encoding of audio data sent. This sample sets this explicitly.
     # This field is optional for FLAC and WAV audio formats.
     #encoding = speech.RecognitionConfig.AudioEncoding.MP3
     config = {
         "language_code": language_code,
-        "enable_separate_recognition_per_channel": True,
-        "audio_channel_count": 2,
-        #"sample_rate_hertz": sample_rate_hertz,
+        #"enable_separate_recognition_per_channel": True,
+        #"audio_channel_count": 2,
+        "sample_rate_hertz": sample_rate_hertz,
     #    "encoding": encoding,
     }
     audio = {"uri": path}

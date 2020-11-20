@@ -56,13 +56,11 @@ def convert_cc_search_to_csv(arguments):
         logger.debug("Making directory: " + directory)
         os.makedirs(directory)
 
-    with open(os.path.join(arguments["output_path"], "data.csv"), "w", newline="") as output_csv_file, \
-        open(os.path.join(arguments["output_path"], "metadata.csv"), "w", newline="") as metadata_csv_file:
+    with open(os.path.join(arguments["output_path"], "data.csv"), "w", newline="") as output_csv_file:
         csv_writer = csv.writer(output_csv_file, delimiter=',', quotechar='"')
-        metadata_writer = csv.writer(metadata_csv_file, delimiter=',', quotechar='"')
-        update_csv(arguments, csv_writer, metadata_writer)
+        update_csv(arguments, csv_writer)
 
-def update_csv(arguments, csv_writer, metadata_writer):
+def update_csv(arguments, csv_writer):
     mp3_files = dict(get_mp3_files(arguments["input_path"]), **get_mp3_files(arguments["output_path"]))
 
     total_count = 0
@@ -96,7 +94,7 @@ def update_csv(arguments, csv_writer, metadata_writer):
 
             text = entry["aligned"]
 
-            save_training_sample(mp3_files, file_uploader, csv_writer, metadata_writer, mp3, mp3_path, start, end, text, entry, arguments, total_count)
+            save_training_sample(mp3_files, file_uploader, csv_writer, mp3, mp3_path, start, end, text, entry, arguments, total_count)
 
             total_count += 1
 
@@ -190,7 +188,7 @@ def delete_audio(mp3, bucket_name, path, arguments):
 def extract_audio(audio, start, end):
     return audio.get()[start:end]
 
-def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio, input_path, start, end, text, entry, arguments, total_count):
+def save_training_sample(mp3s, file_uploader, csv_writer, audio, input_path, start, end, text, entry, arguments, total_count):
     path = get_output_path(arguments, input_path, start, end)
 
     if not blob_exists(mp3s, path):
@@ -209,8 +207,7 @@ def save_training_sample(mp3s, file_uploader, csv_writer, metadata_writer, audio
 
         file_uploader.upload(path, local_path)
 
-    csv_writer.writerow([path, text])
-    metadata_writer.writerow([path, json.dumps(entry)])
+    csv_writer.writerow([path, text, json.dumps(entry)])
 
 def get_output_path(arguments, input_path, start, end):
     return os.path.join(arguments["output_path"], "data", "audio-" + hash_function(input_path + "-" + str(start) + "-" + str(end)) + ".wav")
