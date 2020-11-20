@@ -47,7 +47,8 @@ def load_csv(csv_path):
 
             metadata = {}
             if len(row) >= 3:
-                metadata = json.loads(row[2])
+                if len(row[2]) > 0:
+                    metadata = json.loads(row[2])
 
             yield {"path" : path, "caption" : caption, "metadata" : metadata}
 
