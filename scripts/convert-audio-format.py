@@ -120,7 +120,7 @@ def convert_file(config, path, updated_path):
     local_path = LocalFileCache(config, path).get_path()
     updated_local_path = update_path(local_path, get_format(updated_path))
 
-    logger.debug("Converting from " + local_path + " to " + updated_local_path)
+    logger.debug("Converting from " + local_path + " to " + updated_local_path + "(" + updated_path + ")")
 
     audio = AudioSegment.from_mp3(local_path)
     audio.set_frame_rate(int(config["sampling_rate"]))
@@ -128,7 +128,7 @@ def convert_file(config, path, updated_path):
     audio.export(updated_local_path, format=get_format(updated_path), parameters=["-compression_level", "4", "-ac", "1"])
 
     # upload the file
-    bucket_name, key = get_bucket_and_prefix(path)
+    bucket_name, key = get_bucket_and_prefix(updated_path)
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(key)
     blob.upload_from_filename(local_path)
