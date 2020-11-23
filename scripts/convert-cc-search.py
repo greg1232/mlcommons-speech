@@ -74,6 +74,10 @@ def update_csv(arguments, csv_writer):
         alignment_file_name = "gs://" + os.path.join(bucket_name, file_name)
         alignments, mp3_path = load_alignments(arguments, alignment_file_name)
 
+        if all_alignments_exist(arguments, mp3_path, alignments, mp3_files):
+            logger.debug("Skipping mp3 from " + mp3_path + " which is already fully converted.")
+            continue
+
         if not blob_exists(mp3_files, mp3_path):
             continue
 
@@ -109,6 +113,18 @@ def update_csv(arguments, csv_writer):
             break
 
     file_uploader.join()
+
+def all_alignments_exist(arguments, mp3_path, alignments, mp3_files):
+    for entry in alignments:
+        start = entry["start"]
+        end = entry["end"]
+
+        path = get_output_path(arguments, mp3_path, start, end)
+
+        if not blob_exists(mp3_files, path):
+            return False
+
+    return True
 
 def get_mp3_files(audio_path):
     logger.debug("Getting MP3 files under " + audio_path)
