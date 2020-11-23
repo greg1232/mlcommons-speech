@@ -76,6 +76,7 @@ def update_csv(arguments, csv_writer):
 
         if mp3_size > 250e6:
             logger.debug("Skipping mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB which is too big")
+            delete_cached_file(aligned_file_name)
             continue
 
         logger.debug("Extracting alignments from " + str(aligned_file_name) + ", " + str(file_name))
@@ -84,6 +85,7 @@ def update_csv(arguments, csv_writer):
 
         if all_alignments_exist(arguments, mp3_path, alignments, mp3_files):
             logger.debug("Skipping mp3 from " + mp3_path + " which is already fully converted.")
+            delete_cached_file(aligned_file_name)
             continue
 
         mp3 = load_audio(mp3_path, arguments)
@@ -189,15 +191,14 @@ class MP3File:
 def delete_audio(mp3, mp3_path, alignment_file_name, arguments):
     del mp3
     gc.collect()
-    local_cache = LocalFileCache(arguments, alignment_file_name, create=False).get_path()
+    delete_cached_file(mp3_path)
+    delete_cached_file(alignment_file_name)
+
+def delete_cached_file(path):
+    local_cache = LocalFileCache(arguments, path, create=False).get_path()
     logger.debug("Deleting cache file " + local_cache)
     if os.path.exists(local_cache):
         os.remove(local_cache)
-
-    local_mp3_cache = LocalFileCache(arguments, mp3_path, create=False).get_path()
-    logger.debug("Deleting mp3 cache file " + local_mp3_cache)
-    if os.path.exists(local_mp3_cache):
-        os.remove(local_mp3_cache)
 
 def extract_audio(audio, start, end):
     return audio.get()[start:end]
