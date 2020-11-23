@@ -107,7 +107,7 @@ def update_csv(arguments, csv_writer):
 
         del alignments
 
-        delete_audio(mp3, mp3_path, bucket_name, file_name, arguments)
+        delete_audio(mp3, mp3_path, alignment_file_name, arguments)
 
         if total_count >= int(arguments["max_count"]):
             break
@@ -194,10 +194,10 @@ class MP3File:
 
         return self.mp3
 
-def delete_audio(mp3, mp3_path, bucket_name, path, arguments):
+def delete_audio(mp3, mp3_path, alignment_file_name, arguments):
     del mp3
     gc.collect()
-    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path), create=False).get_path()
+    local_cache = LocalFileCache(arguments, alignment_file_name, create=False).get_path()
     logger.debug("Deleting cache file " + local_cache)
     if os.path.exists(local_cache):
         os.remove(local_cache)

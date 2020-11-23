@@ -82,6 +82,10 @@ def update_csv(arguments, csv_writer):
 
         alignments = load_alignments(bucket_name, aligned_file_name, arguments)
 
+        if all_alignments_exist(arguments, mp3_path, alignments, mp3_files):
+            logger.debug("Skipping mp3 from " + mp3_path + " which is already fully converted.")
+            continue
+
         mp3 = load_audio(mp3_path, arguments)
 
         for entry in alignments:
@@ -99,12 +103,24 @@ def update_csv(arguments, csv_writer):
 
         del alignments
 
-        delete_audio(mp3, bucket_name, file_name, arguments)
+        delete_audio(mp3, mp3_path, aligned_file_name, arguments)
 
         if total_count >= int(arguments["max_count"]):
             break
 
     file_uploader.join()
+
+def all_alignments_exist(arguments, mp3_path, alignments, mp3_files):
+    for entry in alignments:
+        start = entry["start"]
+        end = entry["end"]
+
+        path = get_output_path(arguments, mp3_path, start, end)
+
+        if not blob_exists(mp3_files, path):
+            return False
+
+    return True
 
 def get_mp3_files(audio_path, arguments):
     logger.debug("Getting MP3 files under " + audio_path)
@@ -170,12 +186,18 @@ class MP3File:
 
         return self.mp3
 
-def delete_audio(mp3, bucket_name, path, arguments):
+def delete_audio(mp3, mp3_path, alignment_file_name, arguments):
     del mp3
     gc.collect()
-    local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path), create=False).get_path()
+    local_cache = LocalFileCache(arguments, alignment_file_name, create=False).get_path()
+    logger.debug("Deleting cache file " + local_cache)
     if os.path.exists(local_cache):
         os.remove(local_cache)
+
+    local_mp3_cache = LocalFileCache(arguments, mp3_path, create=False).get_path()
+    logger.debug("Deleting mp3 cache file " + local_mp3_cache)
+    if os.path.exists(local_mp3_cache):
+        os.remove(local_mp3_cache)
 
 def extract_audio(audio, start, end):
     return audio.get()[start:end]

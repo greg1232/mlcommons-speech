@@ -28,13 +28,23 @@ def main():
 
 def add_metadata(arguments):
     samples = load_csv(arguments["input_path"])
+    metadata = load_metadata(arguments["metadata_path"])
 
-    updated_samples = update_samples(samples)
+    updated_samples = update_samples(samples, metadata)
 
     with open(arguments["output_path"], "w", newline="") as output_csv_file:
         csv_writer = csv.writer(output_csv_file, delimiter=',', quotechar='"')
         for sample in updated_samples:
             csv_writer.writerow(sample)
+
+def decomment(csvfile):
+    for row in csvfile:
+        raw = row.split(';')[0].strip()
+        if raw: yield raw
+
+def load_metadata(speakers_path):
+    with open(speakers_path) as speakers_file:
+        csv_reader = csv.reader(decomment(speakers_file), delimiter='|', quotechar='"')
 
 def load_csv(csv_path):
     new_samples = []
@@ -51,14 +61,13 @@ def load_csv(csv_path):
 
             yield {"path" : path, "caption" : caption, "metadata" : metadata}
 
-def update_samples(samples):
+def update_samples(samples, metadata):
     for sample in samples:
-        cleaned_caption = clean(caption)
-        metadata = sample["metadata"]
+        name = get_speaker_id_for_sample(sample["path"])
+        metadata = metadata[name]
         logger.debug("For " + sample["path"])
-        metadata["pre-cleaned-transcript"] = sample["caption"]
-        logger.debug("Cleaned transcript from '" + sample["caption"] + "' to '" + cleaned_caption + "'")
-        yield (sample["path"], cleaned_caption, metadata)
+        logger.debug("Added metadata " + str(metadata))
+        yield (sample["path"], sample["caption"], metadata)
 
 def setup_logger(arguments):
 
