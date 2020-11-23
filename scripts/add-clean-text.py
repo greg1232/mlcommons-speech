@@ -51,7 +51,7 @@ def load_csv(csv_path):
 
 def update_samples(samples):
     for sample in samples:
-        cleaned_caption = clean(caption)
+        cleaned_caption = clean(sample["caption"])
         metadata = sample["metadata"]
         logger.debug("For " + sample["path"])
         metadata["pre-cleaned-transcript"] = sample["caption"]

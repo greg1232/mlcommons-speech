@@ -43,6 +43,7 @@ def decomment(csvfile):
         if raw: yield raw
 
 def load_metadata(speakers_path):
+    metadata = {}
     with open(speakers_path) as speakers_file:
         csv_reader = csv.reader(decomment(speakers_file), delimiter='|', quotechar='"')
 
