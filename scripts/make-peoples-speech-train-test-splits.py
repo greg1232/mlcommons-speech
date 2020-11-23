@@ -62,10 +62,10 @@ def get_librivox_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data.csv")
 
 def get_voicery_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data-clean.csv")
 
 def get_cc_search_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data-clean.csv")
 
 def split_samples(arguments, samples):
 
