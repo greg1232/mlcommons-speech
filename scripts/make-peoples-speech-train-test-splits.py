@@ -1,5 +1,4 @@
 import concurrent.futures
-from google.cloud import storage
 from argparse import ArgumentParser
 import logging
 import csv
@@ -55,17 +54,15 @@ def get_librispeech_samples(samples):
     #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-other.csv")
     #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-clean.csv")
     #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-other.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-100.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-360.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-100-clean.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-360-clean.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500-clean.csv")
 
 def get_librivox_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data.csv")
 
 def get_voicery_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data.csv")
-
-storage_client = storage.Client()
 
 def get_cc_search_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data.csv")
