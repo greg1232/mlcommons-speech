@@ -182,6 +182,7 @@ def delete_audio(mp3, bucket_name, path, arguments):
     del mp3
     gc.collect()
     local_cache = LocalFileCache(arguments, "gs://" + os.path.join(bucket_name, path), create=False).get_path()
+    logger.debug("Deleting cache file " + local_cache)
     if os.path.exists(local_cache):
         os.remove(local_cache)
 

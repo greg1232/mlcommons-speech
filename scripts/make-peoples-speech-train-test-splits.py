@@ -29,7 +29,7 @@ def make_splits(arguments):
 
 def get_common_voice_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/train-flac.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac.csv")
+    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac-transcribed.csv")
 
 def load_csv_samples(samples, csv_path):
     new_samples = []
@@ -51,10 +51,10 @@ def load_csv_samples(samples, csv_path):
     samples.extend(new_samples)
 
 def get_librispeech_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-clean.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-other.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-clean.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-other.csv")
+    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-clean.csv")
+    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-other.csv")
+    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-clean.csv")
+    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-other.csv")
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-100.csv")
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-360.csv")
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500.csv")
@@ -68,7 +68,7 @@ def get_voicery_samples(samples):
 storage_client = storage.Client()
 
 def get_cc_search_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v1/data.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data.csv")
 
 def split_samples(arguments, samples):
 
