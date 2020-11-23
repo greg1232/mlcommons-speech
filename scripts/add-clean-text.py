@@ -15,6 +15,8 @@ def main():
         help = "The output path to load the dataset from.")
     parser.add_argument("-o", "--output-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/test-cleaned-transcripts.csv",
         help = "The output path tosave cleaned transcripts.")
+    parser.add_argument("--to-lower", default = False, action="store_true",
+        help = "Lower case.")
     parser.add_argument("-v", "--verbose", default = False, action="store_true",
         help = "Set the log level to debug, printing out detailed messages during execution.")
 
@@ -27,7 +29,7 @@ def main():
 def clean_transcripts(arguments):
     samples = load_csv(arguments["input_path"])
 
-    updated_samples = update_samples(samples)
+    updated_samples = update_samples(samples, arguments)
 
     with open(arguments["output_path"], "w", newline="") as output_csv_file:
         csv_writer = csv.writer(output_csv_file, delimiter=',', quotechar='"')
@@ -49,9 +51,9 @@ def load_csv(csv_path):
 
             yield {"path" : path, "caption" : caption, "metadata" : metadata}
 
-def update_samples(samples):
+def update_samples(samples, arguments):
     for sample in samples:
-        cleaned_caption = clean(sample["caption"], lower=False, no_line_breaks=True).strip()
+        cleaned_caption = clean(sample["caption"], lower=arguments["to_lower"], no_line_breaks=True).strip()
         metadata = sample["metadata"]
         logger.debug("For " + sample["path"])
         metadata["pre-cleaned-transcript"] = sample["caption"]
