@@ -52,11 +52,11 @@ def load_metadata(speakers_path):
             if len(row) > 5:
                 row[4] = "|".join(row[4:])
 
-            speaker_id = row[0]
-            gender = row[1]
-            dataset_name = row[2]
-            hours = row[3]
-            name = row[4]
+            speaker_id = row[0].strip()
+            gender = row[1].strip()
+            dataset_name = row[2].strip()
+            hours = row[3].strip()
+            name = row[4].strip()
 
             metadata[speaker_id] = {"data_source" : "librispeech",
                 "speaker_id" : speaker_id, "gender" : gender,
