@@ -124,7 +124,7 @@ class ArchiveWriter:
                         del info
                         del updated_path
                         del path
-                        del trascript
+                        del transcript
                         del metadata
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
