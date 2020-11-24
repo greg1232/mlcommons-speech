@@ -76,7 +76,7 @@ def update_csv(arguments, csv_writer):
 
         if mp3_size > 250e6:
             logger.debug("Skipping mp3 from " + mp3_path + " with " + str(mp3_size / 1e6) + "MB which is too big")
-            delete_cached_file(arguments, aligned_file_name)
+            delete_cached_file(arguments, "gs://" + os.path.join(bucket_name, aligned_file_name))
             continue
 
         logger.debug("Extracting alignments from " + str(aligned_file_name) + ", " + str(file_name))
@@ -85,7 +85,7 @@ def update_csv(arguments, csv_writer):
 
         if all_alignments_exist(arguments, mp3_path, alignments, mp3_files):
             logger.debug("Skipping mp3 from " + mp3_path + " which is already fully converted.")
-            delete_cached_file(arguments, aligned_file_name)
+            delete_cached_file(arguments, "gs://" + os.path.join(bucket_name, aligned_file_name))
             continue
 
         mp3 = load_audio(mp3_path, arguments)

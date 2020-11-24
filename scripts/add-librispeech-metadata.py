@@ -46,6 +46,24 @@ def load_metadata(speakers_path):
     metadata = {}
     with open(speakers_path) as speakers_file:
         csv_reader = csv.reader(decomment(speakers_file), delimiter='|', quotechar='"')
+            #14   | F | train-clean-360  | 25.03 | Kristin LeMoine
+            #60   | M | train-clean-100  | 20.18 | |CBW|Simon
+            for row in csv_reader:
+                if len(row) > 5:
+                    row[4] = "|".join(row[4:])
+
+            speaker_id = row[0]
+            gender = row[1]
+            dataset_name = row[2]
+            hours = row[3]
+            name = row[4]
+
+            metadata[speaker_id] = {"data_source" : "librispeech",
+                "speaker_id" : speaker_id, "gender" : gender,
+                "librispeech_split_name" : dataset_name,
+                "hours_per_speaker" : hours, "speaker_name" : name}
+
+    return metadata
 
 def load_csv(csv_path):
     new_samples = []
@@ -69,6 +87,10 @@ def update_samples(samples, metadata):
         logger.debug("For " + sample["path"])
         logger.debug("Added metadata " + str(metadata))
         yield (sample["path"], sample["caption"], metadata)
+
+def get_speaker_id_per_sample(path):
+    basename = os.path.basename(path)
+    return basename.split("-")[0]
 
 def setup_logger(arguments):
 
