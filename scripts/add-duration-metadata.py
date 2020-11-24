@@ -6,6 +6,7 @@ import os
 import json
 from google.cloud import storage
 from smart_open import open
+from pydub import AudioSegment
 
 logger = logging.getLogger(__name__)
 storage_client = storage.Client()
