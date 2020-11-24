@@ -4,6 +4,7 @@ import logging
 import csv
 import os
 import json
+from google.cloud import storage
 from smart_open import open
 
 logger = logging.getLogger(__name__)
