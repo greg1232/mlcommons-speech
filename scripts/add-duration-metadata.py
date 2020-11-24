@@ -93,13 +93,9 @@ class AudioConverter:
             try:
                 row = next(self.samples)
 
-                path = row[0]
-                transcript = row[1]
-                metadata = {}
-
-                if len(row) > 2:
-                    if len(row[2]):
-                        metadata = json.loads(row[2])
+                path = row["path"]
+                transcript = row["caption"]
+                metadata = row["metadata"]
 
                 batch.append((path, transcript, metadata))
             except StopIteration:
