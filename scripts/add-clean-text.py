@@ -58,7 +58,7 @@ def update_samples(samples, arguments):
         logger.debug("For " + sample["path"])
         metadata["pre-cleaned-transcript"] = sample["caption"]
         logger.debug("Cleaned transcript from '" + sample["caption"] + "' to '" + cleaned_caption + "'")
-        yield (sample["path"], cleaned_caption, metadata)
+        yield (sample["path"], cleaned_caption, json.dumps(metadata))
 
 def setup_logger(arguments):
 
