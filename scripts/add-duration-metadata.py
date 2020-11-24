@@ -86,15 +86,15 @@ class AudioConverter:
                         new_metadata = future.result()
                         self.csv_writer.writerow([path, transcript, json.dumps(new_metadata)])
 
-                        duration = new_metadata["duration_seconds"]
+                        duration = new_metadata["duration_seconds"] / 3600.0
                         total_duration += duration
 
                         byte_count = new_metadata["size_in_bytes"]
                         total_bytes += new_metadata["size_in_bytes"]
 
                         logger.debug(" duration is %s seconds out of total %s (%s / %s bytes) with audio %s" %
-                            (sizeof_fmt(duration), sizeof_fmt(total_duration), sizeof_fmt(byte_count),
-                             sizeof_fmt(total_bytes), path))
+                            (sizeof_fmt(duration), sizeof_fmt(total_duration), sizeof_fmt(byte_count, suffix='B'),
+                             sizeof_fmt(total_bytes, suffix='B'), path))
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
 
