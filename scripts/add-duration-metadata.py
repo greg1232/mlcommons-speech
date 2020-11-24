@@ -6,7 +6,7 @@ import os
 import json
 from google.cloud import storage
 from smart_open import open
-import audioread
+import audiofile
 
 logger = logging.getLogger(__name__)
 storage_client = storage.Client()
@@ -86,14 +86,15 @@ class AudioConverter:
                         new_metadata = future.result()
                         self.csv_writer.writerow([path, transcript, json.dumps(new_metadata)])
 
-                        duration = new_metadata["duration_seconds"] / 3600.0
+                        duration = new_metadata["duration_seconds"]
                         total_duration += duration
 
                         byte_count = new_metadata["size_in_bytes"]
                         total_bytes += new_metadata["size_in_bytes"]
 
                         logger.debug(" duration is %s seconds out of total %s (%s / %s bytes) with audio %s" %
-                            (sizeof_fmt(duration), sizeof_fmt(total_duration), sizeof_fmt(byte_count, suffix='B'),
+                            (sizeof_fmt(duration), sizeof_fmt(total_duration / 3600.0, suffix='h'),
+                             sizeof_fmt(byte_count, suffix='B'),
                              sizeof_fmt(total_bytes, suffix='B'), path))
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
@@ -118,8 +119,8 @@ class AudioConverter:
 
 def add_duration(arguments, path, metadata):
     local_path = LocalFileCache(arguments, path).get_path()
-    audio = audioread.audio_open(local_path)
-    metadata["duration_seconds"] = audio.duration
+    audio_duration = audiofile.duration(local_path)
+    metadata["duration_seconds"] = audio_duration
     metadata["size_in_bytes"] = os.path.getsize(local_path)
 
     os.remove(local_path)
