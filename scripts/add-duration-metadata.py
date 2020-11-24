@@ -90,7 +90,7 @@ class AudioConverter:
                         total_duration += duration
 
                         byte_count = new_metadata["size_in_bytes"]
-                        total_bytes = new_metadata["size_in_bytes"]
+                        total_bytes += new_metadata["size_in_bytes"]
 
                         logger.debug(" duration is %s seconds out of total %s (%s / %s bytes) with audio %s" %
                             (sizeof_fmt(duration), sizeof_fmt(total_duration), sizeof_fmt(byte_count),
