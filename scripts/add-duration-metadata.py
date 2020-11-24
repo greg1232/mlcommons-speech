@@ -19,6 +19,8 @@ def main():
         help = "The output path to save dataset with metadata.")
     parser.add_argument("--worker-count", default = 8,
         help = "The number of worker threads.")
+    parser.add_argument("--cache-directory", default = "data",
+        help = "The local path to cache.")
     parser.add_argument("-b", "--batch-size", default = 256,
         help = "The number of audio files to process at one time.")
     parser.add_argument("-v", "--verbose", default = False, action="store_true",
@@ -27,6 +29,8 @@ def main():
     arguments = vars(parser.parse_args())
 
     setup_logger(arguments)
+
+    arguments["system"] = {"cache-directory" : arguments["cache_directory"]}
 
     add_duration_metadata(arguments)
 
