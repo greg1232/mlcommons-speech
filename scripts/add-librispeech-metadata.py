@@ -52,16 +52,18 @@ def load_metadata(speakers_path):
             if len(row) > 5:
                 row[4] = "|".join(row[4:])
 
-        speaker_id = row[0]
-        gender = row[1]
-        dataset_name = row[2]
-        hours = row[3]
-        name = row[4]
+            speaker_id = row[0]
+            gender = row[1]
+            dataset_name = row[2]
+            hours = row[3]
+            name = row[4]
 
-        metadata[speaker_id] = {"data_source" : "librispeech",
-            "speaker_id" : speaker_id, "gender" : gender,
-            "librispeech_split_name" : dataset_name,
-            "hours_per_speaker" : hours, "speaker_name" : name}
+            metadata[speaker_id] = {"data_source" : "librispeech",
+                "speaker_id" : speaker_id, "gender" : gender,
+                "librispeech_split_name" : dataset_name,
+                "hours_per_speaker" : hours, "speaker_name" : name}
+
+            logger.debug("Found metadata for speaker id: " + str(speaker_id) + ": " + str(metadata[speaker_id]))
 
     return metadata
 
