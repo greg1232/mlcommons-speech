@@ -69,6 +69,7 @@ class AudioConverter:
 
     def run(self):
         total_duration = 0.0
+        total_bytes = 0.0
         with concurrent.futures.ThreadPoolExecutor(max_workers=int(self.arguments["worker_count"])) as executor:
             while True:
                 sample_batch = self.get_next_batch()
@@ -88,8 +89,12 @@ class AudioConverter:
                         duration = new_metadata["duration_seconds"]
                         total_duration += duration
 
-                        logger.debug(" duration is %s seconds out of total %s with audio %s" %
-                            (sizeof_fmt(duration), sizeof_fmt(total_duration), path))
+                        byte_count = new_metadata["size_in_bytes"]
+                        total_bytes = new_metadata["size_in_bytes"]
+
+                        logger.debug(" duration is %s seconds out of total %s (%s / %s bytes) with audio %s" %
+                            (sizeof_fmt(duration), sizeof_fmt(total_duration), sizeof_fmt(byte_count),
+                             sizeof_fmt(total_bytes), path))
                     except Exception as exc:
                         print('%r generated an exception: %s' % (path, exc))
 
