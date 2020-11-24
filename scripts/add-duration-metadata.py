@@ -7,6 +7,7 @@ import json
 from smart_open import open
 
 logger = logging.getLogger(__name__)
+storage_client = storage.Client()
 
 def main():
     parser = ArgumentParser("Add duration metadata to data.")
