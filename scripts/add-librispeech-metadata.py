@@ -85,8 +85,8 @@ def load_csv(csv_path):
 def update_samples(samples, metadata):
     for sample in samples:
         name = get_speaker_id_for_sample(sample["path"])
-        metadata = metadata[name]
         logger.debug("For " + sample["path"])
+        metadata = metadata[name]
         logger.debug("Added metadata " + str(metadata))
         yield (sample["path"], sample["caption"], metadata)
 
