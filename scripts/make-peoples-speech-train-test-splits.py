@@ -133,11 +133,11 @@ def main():
     parser = ArgumentParser("Creates people's speech train, test, "
         "development splits.")
 
-    parser.add_argument("--train-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/train.csv",
+    parser.add_argument("--train-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.7/train.csv",
         help = "The output path to save the training dataset.")
-    parser.add_argument("--test-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/test.csv",
+    parser.add_argument("--test-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.7/test.csv",
         help = "The output path to save the test dataset.")
-    parser.add_argument("--development-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.6/development.csv",
+    parser.add_argument("--development-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.7/development.csv",
         help = "The output path to save the development dataset.")
     parser.add_argument("--test-set-size", default = 3000,
         help = "The number of samples to include in the test set.")
