@@ -4,7 +4,6 @@ import csv
 import os
 import json
 from smart_open import open
-from cleantext import clean
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +88,7 @@ def update_samples(samples, metadata):
         logger.debug("Added metadata " + str(metadata))
         yield (sample["path"], sample["caption"], metadata)
 
-def get_speaker_id_per_sample(path):
+def get_speaker_id_for_sample(path):
     basename = os.path.basename(path)
     return basename.split("-")[0]
 
