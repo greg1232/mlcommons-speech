@@ -115,6 +115,7 @@ def add_duration(arguments, path, metadata):
     local_path = LocalFileCache(arguments, path).get_path()
     audio = audioread.audio_open(local_path)
     metadata["duration_seconds"] = audio.duration
+    metadata["size_in_bytes"] = os.path.getsize(local_path)
 
     os.remove(local_path)
     return metadata
