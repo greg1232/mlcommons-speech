@@ -6,7 +6,7 @@ import os
 import json
 from google.cloud import storage
 from smart_open import open
-from pydub import AudioSegment
+import audioread
 
 logger = logging.getLogger(__name__)
 storage_client = storage.Client()
@@ -113,8 +113,8 @@ class AudioConverter:
 
 def add_duration(arguments, path, metadata):
     local_path = LocalFileCache(arguments, path).get_path()
-    audio = AudioSegment.from_file(local_path, os.path.splitext(path)[1][1:])
-    metadata["duration_seconds"] = audio.duration_seconds
+    audio = audioread.audio_open(local_path)
+    metadata["duration_seconds"] = audio.duration
 
     os.remove(local_path)
     return metadata
