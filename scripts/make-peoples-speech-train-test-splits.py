@@ -54,9 +54,9 @@ def get_librispeech_samples(samples):
     #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-other.csv")
     #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-clean.csv")
     #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-other.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-100-clean.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-360-clean.csv")
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500-clean.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-100-clean-metadata.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-360-clean-metadata.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500-clean-metadata.csv")
 
 def get_librivox_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data.csv")
