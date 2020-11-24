@@ -86,9 +86,9 @@ def update_samples(samples, metadata):
     for sample in samples:
         name = get_speaker_id_for_sample(sample["path"])
         logger.debug("For " + sample["path"])
-        metadata = metadata[name]
-        logger.debug("Added metadata " + str(metadata))
-        yield (sample["path"], sample["caption"], metadata)
+        sample_metadata = metadata[name]
+        logger.debug("Added metadata " + str(sample_metadata))
+        yield (sample["path"], sample["caption"], sample_metadata)
 
 def get_speaker_id_for_sample(path):
     basename = os.path.basename(path)
