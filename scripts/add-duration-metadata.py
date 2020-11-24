@@ -113,7 +113,7 @@ class AudioConverter:
 
 def add_duration(arguments, path, metadata):
     local_path = LocalFileCache(arguments, path).get_path()
-    audio = AudioSegment.from_file(local_path, os.path.splitext(path)[1])
+    audio = AudioSegment.from_file(local_path, os.path.splitext(path)[1][1:])
     metadata["duration_seconds"] = audio.duration_seconds
 
     os.remove(local_path)
