@@ -105,7 +105,7 @@ class AudioConverter:
         return batch
 
 def add_duration(arguments, path, metadata):
-    local_path = LocalFileCache(config, path).get_path()
+    local_path = LocalFileCache(arguments, path).get_path()
     audio = AudioSegment.from_mp3(local_path)
     metadata["duration_seconds"] = audio.duration_seconds
 
