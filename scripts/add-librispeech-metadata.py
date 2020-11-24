@@ -63,7 +63,7 @@ def load_metadata(speakers_path):
                 "librispeech_split_name" : dataset_name,
                 "hours_per_speaker" : hours, "speaker_name" : name}
 
-            logger.debug("Found metadata for speaker id: " + str(speaker_id) + ": " + str(metadata[speaker_id]))
+            logger.debug("Found metadata for speaker id: '" + str(speaker_id) + "': " + str(metadata[speaker_id]))
 
     return metadata
 
