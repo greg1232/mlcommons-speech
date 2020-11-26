@@ -98,6 +98,8 @@ class ArchiveWriter:
         self.csv_writer = csv.writer(self.csv_file, delimiter=',', quotechar='"')
 
     def run(self):
+
+        sample_count = 0
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 
             while True:
@@ -116,9 +118,12 @@ class ArchiveWriter:
                         info.size = len(data)
                         data_buffer = io.BytesIO(data)
                         self.archive.addfile(info, data_buffer)
-                        self.csv_writer.writerow([updated_path, transcript, metadata])
+                        self.csv_writer.writerow([updated_path, transcript, json.dumps(metadata)])
 
-                        logger.debug("loaded %s bytes from %s " % (len(data), path))
+                        logger.debug("loaded %s bytes from %s for sample %s " % (len(data), path, sample_count))
+
+                        sample_count += 1
+
                         del data_buffer
                         del data
                         del info

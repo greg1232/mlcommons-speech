@@ -12,23 +12,30 @@ logger = logging.getLogger(__name__)
 from smart_open import open
 
 def make_splits(arguments):
-    samples = []
+    both_samples = []
+    train_samples = []
+    test_samples = []
 
-    get_voicery_samples(samples)
-    get_common_voice_samples(samples)
-    get_librispeech_samples(samples)
-    get_librivox_samples(samples)
-    get_cc_search_samples(samples)
+    get_voicery_samples(both_samples)
+    get_common_voice_train_samples(train_samples)
+    get_common_voice_test_samples(test_samples)
+    get_librispeech_train_samples(train_samples)
+    get_librispeech_test_samples(test_samples)
+    get_librivox_samples(both_samples)
+    get_cc_search_samples(both_samples)
 
-    train, test, development = split_samples(arguments, samples)
+    train, test, development = split_samples(arguments,
+        both_samples, train_samples, test_samples)
 
     save_samples(train, arguments["train_path"])
     save_samples(test, arguments["test_path"])
     save_samples(development, arguments["development_path"])
 
-def get_common_voice_samples(samples):
+def get_common_voice_train_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/train-flac-clean.csv")
-    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac-transcribed.csv")
+
+def get_common_voice_test_samples(samples):
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac-transcribed.csv")
 
 def load_csv_samples(samples, csv_path):
     new_samples = []
@@ -49,26 +56,63 @@ def load_csv_samples(samples, csv_path):
 
     samples.extend(new_samples)
 
-def get_librispeech_samples(samples):
-    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-clean.csv")
-    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-other.csv")
-    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-clean.csv")
-    #load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-other.csv")
+def get_librispeech_test_samples(samples):
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-clean.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/dev-other.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-clean.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/test-other.csv")
+
+def get_librispeech_train_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-100-clean-metadata.csv")
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-clean-360-clean-metadata.csv")
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librispeech-formatted/train-other-500-clean-metadata.csv")
 
 def get_librivox_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data.csv")
+    # 800 hours
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data-duration.csv")
 
 def get_voicery_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data-clean.csv")
+    #
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data-clean-duration.csv")
 
 def get_cc_search_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data-clean.csv")
+    #
+    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data-clean-duration.csv")
 
-def split_samples(arguments, samples):
+def split_samples(arguments, both_samples, train_samples, test_samples):
 
+    both_ids = group_samples_by_id(both_samples)
+    train_ids = group_samples_by_id(train_samples)
+    test_ids = group_samples_by_id(test_samples)
+
+    test_set_size = min(len(test_and_both_ids), int(arguments["test_set_size"]))
+
+    test_and_both_ids = join_ids(both_ids, test_ids)
+
+    test = extract_samples(test_and_both_ids, test_set_size)
+    development = extract_samples(test_and_both_ids, test_set_size)
+
+    remaining_both_ids = remove_samples(both_ids, test)
+    remaining_both_ids = remove_samples(remaining_both_ids, development)
+
+    all_train_ids = join_ids(remaining_both_ids, train_ids)
+
+    train = extract_samples(all_train_ids, len(all_train_ids))
+
+    return train, test, development
+
+def join_ids(left, right):
+    return left + right
+
+def remove_samples(left, right):
+    ids = set([key for key, value in right])
+
+    return [key, value for key, value in left if not key in ids]
+
+def get_id_for_sample(id_map, sample):
+    return sample["path"]
+
+def group_samples_by_id(samples):
     id_map = {}
 
     for sample in samples:
@@ -81,17 +125,7 @@ def split_samples(arguments, samples):
 
     ids = stable_shuffle(id_map)
 
-    test_set_size = min(len(samples) // 3, int(arguments["test_set_size"]))
-
-    test = extract_samples(ids, test_set_size)
-    development = extract_samples(ids, test_set_size)
-
-    train = extract_samples(ids, len(samples))
-
-    return train, test, development
-
-def get_id_for_sample(id_map, sample):
-    return len(id_map)
+    return ids
 
 def stable_shuffle(id_map):
     id_list = [(key, value) for key, value in id_map.items()]
@@ -133,11 +167,11 @@ def main():
     parser = ArgumentParser("Creates people's speech train, test, "
         "development splits.")
 
-    parser.add_argument("--train-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.7/train.csv",
+    parser.add_argument("--train-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.8/train.csv",
         help = "The output path to save the training dataset.")
-    parser.add_argument("--test-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.7/test.csv",
+    parser.add_argument("--test-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.8/test.csv",
         help = "The output path to save the test dataset.")
-    parser.add_argument("--development-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.7/development.csv",
+    parser.add_argument("--development-path", default = "gs://the-peoples-speech-west-europe/peoples-speech-v0.8/development.csv",
         help = "The output path to save the development dataset.")
     parser.add_argument("--test-set-size", default = 3000,
         help = "The number of samples to include in the test set.")

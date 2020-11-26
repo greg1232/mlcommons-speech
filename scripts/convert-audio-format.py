@@ -117,6 +117,10 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 def convert_file(config, path, updated_path):
+    if blob_exists(updated_path):
+        logger.debug("Skipping existing file '" + updated_path + "'")
+        return
+
     local_path = LocalFileCache(config, path).get_path()
     updated_local_path = update_path(local_path, get_format(updated_path))
 
@@ -140,6 +144,15 @@ def convert_file(config, path, updated_path):
     os.remove(updated_local_path)
 
     return updated_size, updated_size / original_size
+
+def blob_exists(path):
+    bucket_name, prefix = get_bucket_and_prefix(path)
+    try:
+        storage_client.head_object(Bucket=bucket_name, Key=prefix)
+    except:
+        return False
+
+    return True
 
 def get_format(path):
     pre, ext = os.path.splitext(path)
