@@ -73,7 +73,7 @@ def get_librivox_samples(samples):
 
 def get_voicery_samples(samples):
     #
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data-clean-duration.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data-clean-durations.csv")
 
 def get_cc_search_samples(samples):
     #

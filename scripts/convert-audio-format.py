@@ -126,7 +126,7 @@ def convert_file(config, path, updated_path):
 
     logger.debug("Converting from " + local_path + " to " + updated_local_path + " ( " + updated_path + " )")
 
-    audio = AudioSegment.from_mp3(local_path)
+    audio = AudioSegment.from_file(local_path, os.path.splitext(local_path)[1][1:])
     audio.set_frame_rate(int(config["sampling_rate"]))
 
     audio.export(updated_local_path, format=get_format(updated_path), parameters=["-compression_level", "4", "-ac", "1"])
