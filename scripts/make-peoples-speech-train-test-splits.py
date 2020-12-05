@@ -86,9 +86,9 @@ def split_samples(arguments, both_samples, train_samples, test_samples):
     train_ids = group_samples_by_id(train_samples)
     test_ids = group_samples_by_id(test_samples)
 
-    test_set_size = min(len(test_and_both_ids), int(arguments["test_set_size"]))
-
     test_and_both_ids = join_ids(both_ids, test_ids)
+
+    test_set_size = min(len(test_and_both_ids), int(arguments["test_set_size"]))
 
     test = extract_samples(test_and_both_ids, test_set_size)
     development = extract_samples(test_and_both_ids, test_set_size)
