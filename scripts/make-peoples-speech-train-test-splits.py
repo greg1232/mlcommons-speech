@@ -38,6 +38,7 @@ def get_common_voice_test_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac-transcribed.csv")
 
 def load_csv_samples(samples, csv_path):
+    logger.debug("Loading samples from " + csv_path)
     new_samples = []
     with open(csv_path) as csv_file:
         reader = csv.reader(csv_file, delimiter=',', quotechar='"')
