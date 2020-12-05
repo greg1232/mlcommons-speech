@@ -69,15 +69,15 @@ def get_librispeech_train_samples(samples):
 
 def get_librivox_samples(samples):
     # 800 hours
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data-duration.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/librivox-v0.3-1M/data-duration-flac.csv")
 
 def get_voicery_samples(samples):
     #
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data-clean-durations.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/voicery/data-clean-durations-flac.csv")
 
 def get_cc_search_samples(samples):
     #
-    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data-clean-duration.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-west-europe/archive_org/v0.2/data-clean-duration-flac.csv")
 
 def split_samples(arguments, both_samples, train_samples, test_samples):
 
@@ -107,7 +107,7 @@ def join_ids(left, right):
 def remove_samples(left, right):
     ids = set([key for key, value in right])
 
-    return [key, value for key, value in left if not key in ids]
+    return [(key, value) for key, value in left if not key in ids]
 
 def get_id_for_sample(id_map, sample):
     return sample["path"]
