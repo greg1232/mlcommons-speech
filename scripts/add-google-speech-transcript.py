@@ -58,7 +58,7 @@ def update_samples(samples):
         logger.debug("For " + sample["path"])
         metadata["google-speech-api-transcript"] = get_transcript(sample["path"])
         logger.debug("Transcribed '" + sample["caption"] + "' to '" + metadata["google-speech-api-transcript"] + "'")
-        yield (sample["path"], sample["caption"], metadata)
+        yield (sample["path"], sample["caption"], json.dumps(metadata))
 
 speech_client = speech.SpeechClient()
 

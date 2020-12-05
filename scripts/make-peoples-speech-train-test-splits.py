@@ -35,7 +35,7 @@ def get_common_voice_train_samples(samples):
     load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/train-flac-clean.csv")
 
 def get_common_voice_test_samples(samples):
-    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac-transcribed.csv")
+    load_csv_samples(samples, "gs://the-peoples-speech-aws-import/common-voice/test-flac.csv")
 
 def load_csv_samples(samples, csv_path):
     logger.debug("Loading samples from " + csv_path)
