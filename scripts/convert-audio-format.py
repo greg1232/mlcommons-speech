@@ -119,7 +119,7 @@ def sizeof_fmt(num, suffix='B'):
 def convert_file(config, path, updated_path):
     if blob_exists(updated_path):
         logger.debug("Skipping existing file '" + updated_path + "'")
-        return
+        return 1, 1
 
     local_path = LocalFileCache(config, path).get_path()
     updated_local_path = update_path(local_path, get_format(updated_path))
@@ -148,8 +148,11 @@ def convert_file(config, path, updated_path):
 def blob_exists(path):
     bucket_name, prefix = get_bucket_and_prefix(path)
     try:
-        storage_client.head_object(Bucket=bucket_name, Key=prefix)
-    except:
+        bucket = storage_client.get_bucket(bucket_name)
+        blob = bucket.blob(prefix)
+        return blob.exists()
+    except Exception as e:
+        logger.debug(path + " does not exist: exception: " + str(e))
         return False
 
     return True
