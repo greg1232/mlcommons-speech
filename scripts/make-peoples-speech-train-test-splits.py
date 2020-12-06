@@ -103,7 +103,10 @@ def split_samples(arguments, both_samples, train_samples, test_samples):
 
     train = extract_samples(all_train_ids, len(all_train_ids))
 
-    return train, test, development
+    return drop_id(train), drop_id(test), drop_id(development)
+
+def drop_id(dataset):
+    return [value for key, value in dataset]
 
 def join_ids(left, right):
     return left + right
@@ -139,25 +142,22 @@ def stable_shuffle(id_map):
 
     generator.shuffle(id_list)
 
-    return id_list
+    return flatten_id_list(id_list)
 
-def extract_samples(ids, count):
-    sample_count = 0
-    id_count = 0
-
-    for index, samples in ids:
-        sample_count += len(samples)
-        id_count += 1
-
-        if sample_count >= count:
-            break
-
+def flatten_id_list(id_list):
     new_samples = []
 
-    for index, samples in ids[:id_count]:
+    for index, samples in id_list:
         new_samples.extend(samples)
 
-    del ids[:id_count]
+    return new_samples
+
+def extract_samples(ids, count):
+    sample_count = min(len(ids), count)
+
+    new_samples = ids[:sample_count].copy()
+
+    del ids[:sample_count]
 
     return new_samples
 
