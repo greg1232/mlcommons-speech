@@ -112,7 +112,6 @@ def join_ids(left, right):
     return left + right
 
 def remove_samples(left, right):
-    print("remove samples, right", right)
     ids = set([key for key, value in right])
 
     return [(key, value) for key, value in left if not key in ids]
@@ -148,7 +147,8 @@ def flatten_id_list(id_list):
     new_samples = []
 
     for index, samples in id_list:
-        new_samples.extend(samples)
+        for sample in samples:
+            new_samples.append((index, sample))
 
     return new_samples
 
