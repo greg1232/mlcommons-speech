@@ -82,14 +82,17 @@ def get_cc_search_samples(samples):
 
 def split_samples(arguments, both_samples, train_samples, test_samples):
 
+    # id -> sample
     both_ids = group_samples_by_id(both_samples)
     train_ids = group_samples_by_id(train_samples)
     test_ids = group_samples_by_id(test_samples)
 
+    # id -> sample
     test_and_both_ids = join_ids(both_ids, test_ids)
 
     test_set_size = min(len(test_and_both_ids), int(arguments["test_set_size"]))
 
+    # id -> sample
     test = extract_samples(test_and_both_ids, test_set_size)
     development = extract_samples(test_and_both_ids, test_set_size)
 
@@ -106,6 +109,7 @@ def join_ids(left, right):
     return left + right
 
 def remove_samples(left, right):
+    print("remove samples, right", right)
     ids = set([key for key, value in right])
 
     return [(key, value) for key, value in left if not key in ids]
