@@ -39,7 +39,7 @@ tf-estimator-nightly==2.3.0.dev2020060401
 tf-nightly==2.2.0.dev20200426
 tqdm==4.46.1
 typeguard==2.8.0
-urllib3==1.25.9
+urllib3==1.26.5
 Werkzeug==1.0.1
 wrapt==1.12.1
 zipp==3.1.0
